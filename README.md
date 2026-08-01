@@ -15,15 +15,8 @@
 
 ## 快速开始
 
-### 方式一：双击打开（最快，推荐！）
-**双击 `tripflow.html`** 即可在浏览器中打开使用，无需安装任何东西。
+**`https://qiuuuyanping.github.io/-TripFlow/tripflow.html`** 即可在浏览器中打开使用，无需安装任何东西。
 这是单文件版本，所有 JS 都内嵌在 HTML 里，不依赖外部文件。
-
-### 方式二：本地服务器
-```bash
-cd /workspace
-python3 -m http.server 8080
-# 浏览器访问 http://localhost:8080/index.html
 ```
 
 ## 功能说明
