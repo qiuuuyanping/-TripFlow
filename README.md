@@ -76,11 +76,6 @@ python3 -m http.server 8080
 | Leaflet + OpenStreetMap | 地图可视化 |
 | localStorage | 数据持久化 |
 
-**为什么不用 Next.js / React？**
-- 你是技术小白，这个方案双击就能打开，零配置
-- 单文件结构，Vibe Coding 时 LLM 容易理解全貌
-- 后续要升级到 React/Next.js 时，逻辑可以直接迁移
-
 ## 文件结构
 
 ```
@@ -94,16 +89,4 @@ python3 -m http.server 8080
 > **为什么有两个版本？**
 > - `tripflow.html` = 单文件版，JS 内嵌在 HTML 里，**双击就能打开**
 > - `index.html` + `app.js` = 分离版，需要通过本地服务器打开（直接双击会被浏览器 CORS 拦截）
-> - 日常使用选 `tripflow.html`；要用 Vibe Coding 改代码时选分离版更好维护
-
-## 后续迭代建议
-
-用 Vibe Coding 工具（如 Cursor、Claude Code、Trae 等）继续迭代时，可以直接对 AI 说：
-
-1. **接入真实地图路线规划**："帮我接入高德地图 Directions API，把直线距离改成真实步行/驾车距离和时间"
-2. **图片上传**："收藏卡片支持上传图片，用 base64 存 localStorage"
-3. **小红书截图 OCR**："加一个粘贴图片功能，自动识别截图里的地点名称和地址"
-4. **多日行程复制**："支持把某天的行程模板复制到另一天"
-5. **导出分享**："支持导出为图片或 PDF 分享给同伴"
-6. **同伴协作**："接入 Supabase 后端，支持多人共同编辑同一份行程"
-7. **离线 PWA**："做成 PWA 可以安装到手机桌面，离线也能用"
+> - 日常使用选 `tripflow.html`；要改代码时选分离版更好维护
