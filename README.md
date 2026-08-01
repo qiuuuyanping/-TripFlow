@@ -15,9 +15,9 @@
 
 ## 快速开始
 
-**`https://qiuuuyanping.github.io/-TripFlow/tripflow.html`** 即可在浏览器中打开使用，无需安装任何东西。
+**`https://qiuuuyanping.github.io/-TripFlow/tripflow.html`** 
+即可在浏览器中打开使用，无需安装任何东西。
 这是单文件版本，所有 JS 都内嵌在 HTML 里，不依赖外部文件。
-```
 
 ## 功能说明
 
