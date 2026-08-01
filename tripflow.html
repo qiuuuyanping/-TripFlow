@@ -1,0 +1,2998 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="旅记">
+  <meta name="theme-color" content="#5848FF">
+  <meta name="description" content="出行计划工具 - 收藏整理 + 行程时间轴 + 地图路线">
+  <!-- iOS 桌面图标（内联 SVG 转 data URI） -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%234f46e5'/%3E%3Ctext x='90' y='120' font-size='90' text-anchor='middle' fill='white'%3E✈️%3C/text%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Ctext x='16' y='22' font-size='16' text-anchor='middle' fill='white'%3E✈️%3C/text%3E%3C/svg%3E">
+  <title>旅记 TripFlow - 出行计划工具</title>
+  <!-- Leaflet 地图库 -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    * { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif; }
+    html { -webkit-text-size-adjust: 100%; }
+    body { background: linear-gradient(135deg, #f8f9fe 0%, #f7f5ff 55%, #f2f7ff 100%); color: #111827; font-size: 14px; line-height: 1.5; }
+    button { cursor: pointer; border: none; background: none; font: inherit; color: inherit; }
+    input, textarea, select { font: inherit; }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; }
+
+    .max-w-6xl { max-width: 72rem; margin: 0 auto; }
+    .max-w-4xl { max-width: 56rem; margin: 0 auto; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+    .p-4 { padding: 1rem; }
+    .p-5 { padding: 1.25rem; }
+    .p-6 { padding: 1.5rem; }
+    .mb-1 { margin-bottom: 0.25rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-3 { margin-bottom: 0.75rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mt-1 { margin-top: 0.25rem; }
+    .mt-2 { margin-top: 0.5rem; }
+    .mt-3 { margin-top: 0.75rem; }
+    .mt-5 { margin-top: 1.25rem; }
+    .gap-1 { gap: 0.25rem; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-4 { gap: 1rem; }
+    .space-y-2 > * + * { margin-top: 0.5rem; }
+    .space-y-3 > * + * { margin-top: 0.75rem; }
+    .space-y-4 > * + * { margin-top: 1rem; }
+    .space-y-6 > * + * { margin-top: 1.5rem; }
+    .flex { display: flex; }
+    .flex-1 { flex: 1; }
+    .flex-shrink-0 { flex-shrink: 0; }
+    .flex-wrap { flex-wrap: wrap; }
+    .flex-col { flex-direction: column; }
+    .items-center { align-items: center; }
+    .items-start { align-items: flex-start; }
+    .justify-between { justify-content: space-between; }
+    .justify-center { justify-content: center; }
+    .justify-end { justify-content: flex-end; }
+    .text-center { text-align: center; }
+    .font-bold { font-weight: 700; }
+    .font-semibold { font-weight: 600; }
+    .font-medium { font-weight: 500; }
+    .text-xs { font-size: 0.75rem; }
+    .text-sm { font-size: 0.875rem; }
+    .text-lg { font-size: 1.125rem; }
+    .text-xl { font-size: 1.25rem; }
+    .text-2xl { font-size: 1.5rem; }
+    .text-3xl { font-size: 1.875rem; }
+    .text-4xl { font-size: 2.25rem; }
+    .text-white { color: #fff; }
+    .text-gray-300 { color: #d1d5db; }
+    .text-gray-400 { color: #9ca3af; }
+    .text-gray-500 { color: #6b7280; }
+    .text-gray-600 { color: #4b5563; }
+    .text-gray-700 { color: #374151; }
+    .text-gray-800 { color: #1f2937; }
+    .text-gray-900 { color: #111827; }
+    .text-indigo-600 { color: #4f46e5; }
+    .text-amber-600 { color: #d97706; }
+    .text-amber-800 { color: #92400e; }
+    .text-amber-900 { color: #78350f; }
+    .text-rose-600 { color: #e11d48; }
+    .text-emerald-600 { color: #059669; }
+    .text-blue-600 { color: #2563eb; }
+    .bg-white { background: #fff; }
+    .bg-gray-50 { background: #f9fafb; }
+    .bg-gray-100 { background: #f3f4f6; }
+    .bg-indigo-600 { background: #4f46e5; }
+    .bg-indigo-50 { background: #eef2ff; }
+    .bg-amber-50 { background: #fffbeb; }
+    .bg-amber-100 { background: #fef3c7; }
+    .bg-rose-50 { background: #fff1f2; }
+    .bg-blue-50 { background: #eff6ff; }
+    .border { border: 1px solid #e5e7eb; }
+    .border-b { border-bottom: 1px solid #e5e7eb; }
+    .border-gray-100 { border-color: #f3f4f6; }
+    .border-gray-200 { border-color: #e5e7eb; }
+    .border-gray-300 { border-color: #d1d5db; }
+    .border-amber-200 { border-color: #fde68a; }
+    .border-amber-300 { border-color: #fcd34d; }
+    .border-rose-300 { border-color: #fda4af; }
+    .border-indigo-300 { border-color: #a5b4fc; }
+    .border-blue-300 { border-color: #93c5fd; }
+    .border-2 { border-width: 2px; border-style: solid; }
+    .rounded { border-radius: 0.25rem; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .rounded-2xl { border-radius: 1rem; }
+    .rounded-full { border-radius: 9999px; }
+    .rounded-md { border-radius: 0.375rem; }
+
+    /* ============ 蓝紫主题色板 ============ */
+    :root {
+      --primary-500: #5848FF;
+      --primary-400: #7666FF;
+      --primary-300: #A98CFF;
+      --primary-100: #F0EDFF;
+      --blue-500: #3082F6;
+      --blue-100: #E8F2FF;
+      --cyan-500: #22D3EE;
+      --cyan-100: #E8FBFF;
+      --green-500: #10B981;
+      --green-100: #E8FAF3;
+      --orange-500: #F59E0B;
+      --orange-100: #FFF7E6;
+      --bg-primary: #F8FAFF;
+      --bg-secondary: #F5F3FF;
+      --bg-warm: #FFFDF8;
+      --hero-dark: #21145F;
+      --hero-purple: #5848FF;
+      --text-primary: #111827;
+      --text-secondary: #374151;
+      --text-tertiary: #6B7280;
+      --text-disabled: #9CA3AF;
+      --card-bg: #FFFFFF;
+      --card-border: #E5E7EB;
+      --brand-50: var(--primary-100);
+      --brand-100: #E0DBFF;
+      --brand-200: #C4B5FD;
+      --brand-300: var(--primary-300);
+      --brand-400: var(--primary-400);
+      --brand-500: var(--primary-500);
+      --brand-600: #4939E8;
+      --brand-700: #3929C7;
+      --violet-500: #8B6CFF;
+      --violet-600: #6B4EFF;
+      --pink-400: #F472B6;
+      --bg-page: var(--bg-primary);
+      --card-shadow: 0 4px 20px -8px rgba(88, 72, 255, 0.08), 0 2px 6px rgba(17,24,39,0.04);
+      --card-shadow-hover: 0 12px 32px -10px rgba(88, 72, 255, 0.2), 0 4px 12px rgba(17,24,39,0.06);
+    }
+    .shadow-lg { box-shadow: var(--card-shadow); }
+    .overflow-hidden { overflow: hidden; }
+    .overflow-y-auto { overflow-y: auto; }
+    .overflow-x-auto { overflow-x: auto; }
+    .hidden { display: none !important; }
+    .grid { display: grid; }
+    .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+    .w-full { width: 100%; }
+    .min-w-0 { min-width: 0; }
+    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .leading-relaxed { line-height: 1.625; }
+    .relative { position: relative; }
+    .pl-6 { padding-left: 1.5rem; }
+    .ml-2 { margin-left: 0.5rem; }
+    .gradient-indigo { background: linear-gradient(135deg, #5848FF 0%, #8B6CFF 100%); }
+    .gradient-cool { background: linear-gradient(135deg, #21145F 0%, #5848FF 100%); }
+    .gradient-violet { background: linear-gradient(135deg, #5848FF 0%, #8B6CFF 55%, #A98CFF 100%); }
+    .gradient-blue-pink { background: linear-gradient(135deg, #3082F6 0%, #5848FF 55%, #EC4899 100%); }
+    .bg-mesh {
+      background:
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(244, 114, 182, 0.05) 0px, transparent 50%),
+        #F8FAFF;
+    }
+
+    .landing-page { min-height: 100vh; overflow: hidden; background: #fff; color: #fff; padding: clamp(1rem, 3vw, 1.75rem); }
+    .landing-shell { position: relative; min-height: calc(100vh - clamp(2rem, 6vw, 3.5rem)); max-width: 1780px; margin: 0 auto; overflow: hidden; border-radius: clamp(1.25rem, 2.5vw, 2rem); background: #100b35; box-shadow: 0 28px 70px rgba(17,24,39,0.18); }
+    .landing-shell::before { content: ''; position: absolute; inset: 0; z-index: 0; background-image: radial-gradient(circle at center 38%, rgba(8,10,45,0.5) 0%, rgba(19,16,82,0.25) 38%, rgba(19,16,82,0.08) 72%), linear-gradient(180deg, rgba(8,10,45,0.12) 0%, rgba(8,10,45,0.34) 100%), url('LandingPage背景图.png'); background-size: cover; background-position: center center; animation: heroImageIn 400ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .landing-hero { position: relative; z-index: 1; min-height: calc(100vh - clamp(2rem, 6vw, 3.5rem)); display: flex; align-items: center; justify-content: center; padding: clamp(4rem, 10vh, 7rem) clamp(2rem, 6vw, 6rem); text-align: center; }
+    .landing-copy-block { display: flex; flex-direction: column; align-items: center; width: min(36rem, 100%); margin: 0 auto; text-align: center; }
+    .landing-title { margin: 0; color: #fff; font-size: clamp(3.75rem, 7vw, 7rem); font-weight: 700; line-height: 0.95; letter-spacing: 0; text-align: center; text-shadow: 0 12px 36px rgba(0,0,0,0.28); animation: landingTitleIn 360ms 70ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .landing-copy { margin-top: clamp(1.25rem, 2vw, 2rem); color: rgba(255,255,255,0.92); font-size: clamp(1.5rem, 2.4vw, 2.5rem); line-height: 1.2; font-weight: 400; text-shadow: 0 10px 30px rgba(0,0,0,0.28); animation: landingCopyIn 320ms 150ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .landing-actions { display: flex; flex-direction: column; align-items: stretch; gap: 1.2rem; width: min(25rem, 100%); margin: clamp(2.25rem, 4vh, 3.25rem) auto 0; animation: landingActionsIn 340ms 230ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .landing-cta, .landing-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 4.25rem; padding: 1rem 1.4rem; border-radius: 9999px; font-size: clamp(1.05rem, 1.5vw, 1.45rem); font-weight: 700; transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1), background 220ms ease; }
+    .landing-cta { background: linear-gradient(135deg, #5848FF, #7C4DFF); color: #fff; box-shadow: 0 20px 36px rgba(88,72,255,0.45); }
+    .landing-cta:hover { transform: translateY(-2px); box-shadow: 0 24px 42px rgba(88,72,255,0.55); }
+    .landing-secondary { border: 1.5px solid rgba(255,255,255,0.75); background: rgba(10, 10, 35, 0.12); color: #fff; -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+    .landing-secondary:hover { transform: translateY(-2px); background: rgba(255,255,255,0.12); }
+    .landing-trip-picker { align-self: center; width: min(26rem, 100%); margin: 1.25rem auto 0; max-width: 26rem; text-align: left; animation: landingCopyIn 320ms 300ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .landing-trip-picker-title { margin-bottom: 0.625rem; color: rgba(255,255,255,0.72); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+    .landing-trip-list { display: grid; gap: 0.625rem; }
+    .landing-trip-card { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; width: 100%; padding: 0.8rem 0.95rem; border: 1px solid rgba(255,255,255,0.24); border-radius: 0.9rem; background: rgba(255,255,255,0.12); color: #fff; text-align: left; transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), border-color 220ms ease, background 220ms ease, box-shadow 220ms ease; }
+    .landing-trip-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.18); box-shadow: 0 12px 28px rgba(5, 4, 32, 0.2); }
+    .landing-trip-card strong { display: block; font-size: 0.95rem; }
+    .landing-trip-card span { display: block; margin-top: 0.15rem; color: #C7D2FE; font-size: 0.72rem; }
+
+    @media (max-width: 780px) {
+      .landing-page { min-height: 100svh; overflow-y: auto; padding: 0; background: #100b35; }
+      .landing-shell { min-height: 100svh; border-radius: 0; background: #100b35; box-shadow: none; }
+      .landing-shell::before { content: ''; position: fixed; inset: 0; height: 100svh; background-image: linear-gradient(180deg, rgba(12,9,47,0.3) 0%, rgba(12,9,47,0.18) 42%, rgba(12,9,47,0.6) 76%, rgba(16,11,53,0.94) 100%), url('LandingPage背景图.png'); background-size: cover; background-position: center center; background-repeat: no-repeat; }
+      .landing-shell::after { content: ''; position: fixed; inset: 0; height: 100svh; background: radial-gradient(circle at center 54%, rgba(16,11,53,0.02) 0%, rgba(16,11,53,0.08) 38%, rgba(16,11,53,0.34) 100%); pointer-events: none; }
+      .landing-hero { position: relative; z-index: 1; min-height: 100svh; align-items: flex-start; justify-content: center; padding: max(3.25rem, calc(env(safe-area-inset-top) + 2rem)) 1.25rem max(2rem, env(safe-area-inset-bottom)); text-align: center; }
+      .landing-copy-block { display: flex; flex-direction: column; align-items: center; width: min(32rem, 100%); margin: 0 auto; transform: none; text-align: center; }
+      .landing-title { font-size: clamp(3.2rem, 14vw, 4.6rem); line-height: 0.98; text-align: center; text-shadow: 0 12px 34px rgba(0,0,0,0.42); }
+      .landing-copy { margin-top: 1rem; font-size: clamp(1.25rem, 6vw, 1.7rem); text-shadow: 0 10px 28px rgba(0,0,0,0.38); }
+      .landing-actions { align-items: stretch; width: min(22rem, 92vw); margin: 1.5rem auto 0; gap: 0.85rem; }
+      .landing-cta, .landing-secondary { min-height: 3.75rem; padding: 0.9rem 1.15rem; font-size: 1.08rem; }
+      .landing-secondary { background: rgba(255,255,255,0.06); }
+      .landing-trip-picker { align-self: stretch; width: 100%; max-width: 32rem; margin: clamp(12rem, 30svh, 18rem) auto 0; text-align: left; }
+      .landing-trip-picker-title { margin-bottom: 0.55rem; color: rgba(255,255,255,0.7); }
+      .landing-trip-list { max-height: none; overflow: visible; padding-right: 0; }
+      .landing-trip-card { padding: 0.8rem 0.9rem; border-color: rgba(255,255,255,0.22); background: rgba(18,14,58,0.72); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+      .landing-trip-card strong { font-size: 0.92rem; }
+    }
+
+    /* ============ 模态框 ============ */
+    .modal-overlay { position: fixed; top:0; right:0; bottom:0; left:0; background: rgba(15, 23, 42, 0.55); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1rem; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+    .modal-content { background: #fff; border-radius: 1.25rem; box-shadow: 0 25px 60px -12px rgba(79, 70, 229, 0.35); width: 100%; max-width: 32rem; max-height: 85vh; overflow-y: auto; padding: 1.75rem; }
+
+    /* ============ 导航 ============ */
+    .nav-bar { background: rgba(255, 255, 255, 0.92); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid rgba(88, 72, 255, 0.12); position: sticky; top: 0; z-index: 50; box-shadow: 0 8px 24px rgba(88,72,255,0.06); }
+    .app-nav-inner { min-height: 4.25rem; gap: 1rem; }
+    .app-brand { flex: 0 0 auto; white-space: nowrap; }
+    .app-brand-mark { width: 2rem; height: 2rem; display: grid; place-items: center; border-radius: 0.75rem; background: linear-gradient(135deg,#4f46e5,#8b5cf6); color: #fff; font-size: 1.1rem; box-shadow: 0 6px 14px rgba(79,70,229,0.25); }
+    .app-brand-name { color: #111827; font-size: 1rem; font-weight: 700; }
+    .app-brand-name strong { color: #4f46e5; }
+    .app-nav-links { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+    .app-nav-links::-webkit-scrollbar { display: none; }
+    .nav-btn { padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; color: #475569; white-space: nowrap; transition: all 0.2s ease; }
+    .nav-btn:hover { background: rgba(99, 102, 241, 0.08); color: var(--brand-600); }
+    .nav-btn.active { background: linear-gradient(135deg, #5848FF 0%, #8B6CFF 100%); color: #fff; box-shadow: 0 4px 12px rgba(88, 72, 255, 0.3); }
+    .nav-home { padding: 0.5rem 0.875rem; border: 1px solid rgba(88,72,255,0.18); border-radius: 9999px; background: rgba(240,237,255,0.9); color: #5848FF; font-size: 0.875rem; font-weight: 600; white-space: nowrap; transition: all 0.2s ease; }
+    .nav-home:hover { background: rgba(169,140,255,0.2); color: #3929C7; }
+
+    /* ============ 按钮 ============ */
+    .input { width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e2e8f0; border-radius: 0.625rem; font-size: 0.9375rem; background: #fff; transition: all 0.2s; color: #1e293b; }
+    .input:focus { outline: none; border-color: var(--primary-400); box-shadow: 0 0 0 3px rgba(88, 72, 255, 0.12); }
+
+    .btn-primary { padding: 0.625rem 1.25rem; background: linear-gradient(135deg, #5848FF 0%, #8B6CFF 100%); color: #fff; border-radius: 9999px; font-size: 0.9375rem; font-weight: 600; transition: all 0.2s; box-shadow: 0 4px 14px rgba(88, 72, 255, 0.35); border: none; cursor: pointer; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(88, 72, 255, 0.45); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-secondary { padding: 0.625rem 1.25rem; color: #475569; border-radius: 9999px; font-size: 0.9375rem; font-weight: 500; background: rgba(240, 237, 255, 0.9); transition: all 0.2s; border: none; cursor: pointer; }
+    .btn-secondary:hover { background: rgba(169, 140, 255, 0.2); color: var(--brand-700); }
+
+    .btn-danger { padding: 0.625rem 1.25rem; color: #dc2626; border-radius: 9999px; font-size: 0.9375rem; font-weight: 600; background: #fef2f2; transition: all 0.2s; border: none; cursor: pointer; }
+    .btn-danger:hover { background: #fee2e2; color: #b91c1c; }
+
+    .btn-outline { padding: 0.5rem 0.875rem; border: 1.5px solid rgba(88, 72, 255, 0.25); border-radius: 9999px; font-size: 0.875rem; color: var(--brand-600); background: rgba(255, 255, 255, 0.7); transition: all 0.2s; cursor: pointer; font-weight: 500; }
+    .btn-outline:hover { background: rgba(240, 237, 255, 0.9); border-color: var(--brand-400); }
+
+    /* ============ 卡片 ============ */
+    .card-wrap { transition: all 0.25s ease; }
+    .card-wrap:hover { transform: translateY(-2px); }
+    .card-wrap:hover .card-actions, .card-wrap:active .card-actions { opacity: 1; }
+    .card-actions { opacity: 0; transition: opacity 0.2s; }
+    .mod-card { background: rgba(255,255,255,0.92); border-radius: 1.25rem; border: 1px solid var(--card-border); box-shadow: var(--card-shadow); }
+    .mod-card:hover { box-shadow: var(--card-shadow-hover); }
+
+    .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #a5b4fc, #c4b5fd); border-radius: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes heroImageIn { from { opacity: 0; transform: scale(1.035); } to { opacity: 1; transform: scale(1); } }
+    @keyframes landingTitleIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes landingCopyIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes landingActionsIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ============ 动效系统：轻量、可中断、只动 transform/opacity ============ */
+    :root { --motion-ease: cubic-bezier(0.16, 1, 0.3, 1); --motion-fast: 180ms; --motion-base: 260ms; }
+    .reveal-on-scroll { opacity: 0; transform: translateY(18px); transition: opacity 320ms var(--motion-ease) var(--reveal-delay, 0ms), transform 320ms var(--motion-ease) var(--reveal-delay, 0ms); }
+    .reveal-on-scroll.is-visible { opacity: 1; transform: translateY(0); }
+    .view-content > * { transition: opacity 260ms var(--motion-ease), transform 260ms var(--motion-ease); }
+
+    .modal-overlay { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 220ms var(--motion-ease), visibility 220ms; }
+    .modal-overlay.is-visible { opacity: 1; visibility: visible; pointer-events: auto; }
+    .modal-content { opacity: 0; transform: translateY(12px) scale(0.98); transition: opacity 240ms var(--motion-ease), transform 240ms var(--motion-ease); animation: none; }
+    .modal-overlay.is-visible .modal-content { opacity: 1; transform: translateY(0) scale(1); }
+
+    button { transition: transform var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease), background-color var(--motion-fast) ease, border-color var(--motion-fast) ease, color var(--motion-fast) ease; }
+    button:active { transform: scale(0.98) !important; }
+    button:focus-visible, .input:focus-visible { outline: 3px solid rgba(88, 72, 255, 0.28); outline-offset: 2px; }
+    .btn-primary, .landing-cta { position: relative; overflow: hidden; isolation: isolate; }
+    .btn-primary::after, .landing-cta::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.28) 50%, transparent 70%); transform: translateX(-120%); transition: transform 420ms var(--motion-ease); pointer-events: none; }
+    .btn-primary:hover::after, .landing-cta:hover::after { transform: translateX(120%); }
+
+    .mod-card { position: relative; overflow: hidden; transition: transform 260ms var(--motion-ease), box-shadow 260ms var(--motion-ease), border-color 260ms ease; }
+    .mod-card::after { content: ''; position: absolute; inset: 0; border: 1px solid rgba(139, 92, 246, 0.34); border-radius: inherit; opacity: 0; pointer-events: none; transition: opacity 260ms ease; }
+    .mod-card:hover { transform: translateY(-3px); border-color: rgba(139, 92, 246, 0.24); }
+    .mod-card:hover::after { opacity: 1; }
+    .timeline-card, .timeline-action-btn, .drag-handle { transition: transform 220ms var(--motion-ease), box-shadow 220ms var(--motion-ease), border-color 220ms ease, background-color 220ms ease; }
+    .timeline-card:hover { transform: translateX(2px); box-shadow: 0 8px 20px rgba(88,72,255,0.08); border-color: #ddd6fe; }
+    .input { transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease; }
+
+    /* ============ 概览仪表盘 ============ */
+    .overview-shell { position: relative; min-height: calc(100vh - 1.5rem); margin: 0.75rem auto; max-width: 2000px; overflow: clip; border-radius: 1.75rem; background: #e9e9ff; color: #fff; isolation: isolate; }
+    .overview-shell::before { content: ''; position: absolute; inset: 0; z-index: -2; background-color: #eeecff; background-image: linear-gradient(180deg, rgba(28, 19, 104, 0.45) 0%, rgba(59, 48, 167, 0.24) 32%, rgba(235, 232, 255, 0.93) 70%, #eeecff 100%), url('LandingPage背景图.png'); background-size: 100% auto; background-repeat: no-repeat; background-position: center top; }
+    .overview-shell::after { content: ''; position: absolute; inset: 48% 0 0; z-index: -1; background: linear-gradient(180deg, rgba(231, 229, 255, 0) 0%, rgba(237, 235, 255, 0.84) 22%, #eeecff 100%); pointer-events: none; }
+    .overview-page { position: relative; z-index: 1; width: 100%; max-width: 76rem !important; margin: 0 auto; padding: 3rem 1.5rem 2.25rem !important; }
+    .overview-hero { min-height: 19rem; display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; padding: 2rem 0 2.5rem; }
+    .overview-hero-copy { max-width: 44rem; }
+    .overview-kicker { display: inline-flex; align-items: center; gap: 0.45rem; margin-bottom: 1rem; padding: 0.5rem 0.9rem; border: 1px solid rgba(255,255,255,0.25); border-radius: 9999px; background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.94); font-size: 0.95rem; font-weight: 700; box-shadow: 0 6px 18px rgba(35,25,125,0.1); }
+    .overview-kicker::before { content: '◉'; color: #fff; font-size: 0.8rem; }
+    .overview-title { margin: 0; color: #fff; font-size: clamp(2.8rem, 6vw, 5.2rem); line-height: 0.98; letter-spacing: -0.055em; text-shadow: 0 10px 30px rgba(28,19,104,0.22); }
+    .overview-date { margin-top: 1.1rem; color: rgba(255,255,255,0.92); font-size: clamp(1rem, 1.5vw, 1.35rem); font-weight: 500; text-shadow: 0 4px 16px rgba(28,19,104,0.18); }
+    .overview-city-tags { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.4rem; }
+    .overview-city-tag { display: inline-flex; align-items: center; min-height: 2.65rem; padding: 0.58rem 1.15rem; border: 1px solid rgba(255,255,255,0.34); border-radius: 9999px; background: rgba(255,255,255,0.16); color: #fff; font-size: 0.95rem; font-weight: 650; box-shadow: 0 7px 20px rgba(35,25,125,0.1); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+    .overview-hero-edit { flex-shrink: 0; align-self: center; padding: 0.7rem 1.15rem; border: 1px solid rgba(255,255,255,0.4); border-radius: 9999px; background: rgba(33, 22, 118, 0.18); color: #fff; font-weight: 700; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+    .overview-hero-edit:hover { background: rgba(255,255,255,0.18); }
+    .overview-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; }
+    .overview-stat-card { position: relative; display: flex; align-items: center; gap: 1.05rem; min-height: 8.5rem; padding: 1.25rem 1.35rem; overflow: hidden; border: 1px solid rgba(255,255,255,0.8); border-radius: 1.45rem; background: rgba(255,255,255,0.78); color: #334155; box-shadow: 0 14px 30px rgba(86, 73, 181, 0.12); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+    .overview-stat-card::after { content: ''; position: absolute; inset: auto -8% -42%; height: 80%; background: linear-gradient(135deg, transparent, rgba(133, 118, 255, 0.13)); transform: rotate(-12deg); pointer-events: none; }
+    .overview-stat-icon { position: relative; z-index: 1; display: grid; place-items: center; width: 3.5rem; height: 3.5rem; flex: 0 0 3.5rem; border-radius: 50%; font-size: 1.45rem; }
+    .overview-stat-body { position: relative; z-index: 1; }
+    .overview-stat-value { font-size: 2.35rem; font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
+    .overview-stat-label { margin-top: 0.55rem; color: #64748b; font-size: 1rem; font-weight: 600; }
+    .overview-stat-blue .overview-stat-icon { background: #eeeaff; color: #5848ff; }
+    .overview-stat-blue .overview-stat-value { color: #5848ff; }
+    .overview-stat-amber .overview-stat-icon { background: #fff3e7; color: #e78715; }
+    .overview-stat-amber .overview-stat-value { color: #dc7b0b; }
+    .overview-stat-rose .overview-stat-icon { background: #ffe9f0; color: #e83d71; }
+    .overview-stat-rose .overview-stat-value { color: #e23266; }
+    .overview-stat-green .overview-stat-icon { background: #e5f6f1; color: #159b78; }
+    .overview-stat-green .overview-stat-value { color: #159b78; }
+    .overview-section-card { margin-top: 1.5rem; padding: 1.5rem 1.65rem 1.2rem; border: 1px solid rgba(255,255,255,0.78); border-radius: 1.45rem; background: rgba(255,255,255,0.72); color: #334155; box-shadow: 0 16px 36px rgba(86, 73, 181, 0.1); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+    .overview-section-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.7rem; }
+    .overview-section-title { display: flex; align-items: center; gap: 0.65rem; margin: 0; color: #334155; font-size: 1.35rem; letter-spacing: -0.02em; }
+    .overview-section-title span { color: #5848ff; }
+    .overview-section-link { color: #5848ff; font-size: 0.9rem; font-weight: 700; }
+    .overview-city-row { display: flex; align-items: center; gap: 1rem; width: 100%; padding: 0.9rem 0.2rem; border-bottom: 1px dashed rgba(148,163,184,0.22); text-align: left; }
+    .overview-city-row:last-child { border-bottom: 0; }
+    .overview-city-row:hover { transform: translateX(4px); }
+    .overview-city-avatar { display: grid; place-items: center; width: 3rem; height: 3rem; flex: 0 0 3rem; border: 3px solid rgba(255,255,255,0.9); border-radius: 50%; background: linear-gradient(145deg, #97a4ff, #5848ff); color: #fff; font-size: 1.25rem; font-weight: 800; box-shadow: 0 6px 14px rgba(88,72,255,0.18); }
+    .overview-city-name { min-width: 8rem; color: #334155; font-size: 1.1rem; font-weight: 700; }
+    .overview-city-badges { display: flex; flex: 1; flex-wrap: wrap; justify-content: flex-end; gap: 0.65rem; }
+    .overview-type-badge, .overview-city-total { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.48rem 0.8rem; border-radius: 0.8rem; background: rgba(238,238,255,0.82); color: #536078; font-size: 0.85rem; font-weight: 700; }
+    .overview-city-total { color: #5848ff; background: rgba(232,229,255,0.9); }
+    .overview-empty { padding: 1.5rem 0 1rem; color: #94a3b8; text-align: center; }
+    .overview-notes { padding: 1rem 1.2rem; border: 1px solid rgba(245,158,11,0.18); border-radius: 1rem; background: rgba(255,251,235,0.72); color: #92400e; }
+    .overview-actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+    .overview-action { display: inline-flex; align-items: center; justify-content: center; gap: 0.55rem; min-height: 3.35rem; padding: 0.75rem 1rem; border: 1px solid rgba(113,99,230,0.25); border-radius: 9999px; background: rgba(255,255,255,0.64); color: #5848ff; font-size: 0.95rem; font-weight: 700; box-shadow: 0 6px 16px rgba(88,72,255,0.06); }
+    .overview-action:hover { background: rgba(255,255,255,0.92); border-color: rgba(88,72,255,0.42); }
+    .overview-action-danger { border-color: rgba(244,63,94,0.22); background: rgba(255,241,242,0.72); color: #e54866; }
+    .overview-action-danger:hover { background: rgba(255,241,242,0.96); border-color: rgba(244,63,94,0.38); }
+
+    /* ============ 收藏城市分组 ============ */
+    .collection-city-list { display: grid; gap: 1.35rem; }
+    .collection-city-group { overflow: hidden; border-radius: 1.35rem; }
+    .collection-city-header { display: flex; align-items: center; gap: 1rem; min-height: 4.75rem; padding: 1.05rem 1.4rem; cursor: pointer; background: linear-gradient(135deg, #f8faff, #faf7ff); transition: background 180ms ease, box-shadow 180ms ease; }
+    .collection-city-header:hover { background: linear-gradient(135deg, #f4f5ff, #f8f3ff); }
+    .collection-city-chevron { display: grid; place-items: center; width: 2.15rem; height: 2.15rem; flex: 0 0 2.15rem; border-radius: 9999px; background: #ecebff; color: #6658e8; font-size: 1.35rem; line-height: 1; font-weight: 500; transition: transform 180ms ease, background 180ms ease; }
+    .collection-city-header:hover .collection-city-chevron { background: #e3e0ff; }
+    .collection-city-chevron.is-open { transform: rotate(90deg); }
+    .collection-city-name { color: #1f2937; font-size: 1.12rem; font-weight: 750; letter-spacing: -0.01em; }
+    .collection-city-progress { margin-left: auto; padding: 0.35rem 0.7rem; border-radius: 9999px; background: rgba(99,102,241,0.1); color: #4f46e5; font-size: 0.78rem; font-weight: 700; }
+    .collection-city-grid { display: grid; grid-template-columns: 1fr; gap: 1.15rem; padding: 1.45rem; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 1ms !important; }
+      .reveal-on-scroll { opacity: 1; transform: none; }
+    }
+
+    @media (max-width: 900px) {
+      .overview-shell { margin: 0; min-height: 100vh; border-radius: 0; }
+      .overview-page { padding: 2.25rem 1rem 1.5rem !important; }
+      .overview-hero { min-height: 16rem; padding: 1.5rem 0 2rem; }
+      .overview-title { font-size: clamp(2.8rem, 10vw, 4.4rem); }
+      .overview-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .overview-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      .nav-bar .max-w-6xl { padding: 0 0.75rem; }
+      .app-nav-inner { flex-wrap: wrap; gap: 0.55rem; padding: 0.65rem 0 0.55rem; }
+      .app-brand { width: 100%; }
+      .app-nav-links { display: grid !important; grid-template-columns: repeat(6, minmax(0, 1fr)); width: 100%; gap: 0.3rem !important; overflow: visible !important; }
+      .app-nav-links .nav-btn, .app-nav-links .nav-home { min-width: 0; padding: 0.48rem 0.2rem; font-size: 0.72rem; text-align: center; }
+    }
+    @media (max-width: 560px) {
+      .app-nav-inner { padding-top: 0.55rem; }
+      .app-brand-mark { width: 1.85rem; height: 1.85rem; border-radius: 0.68rem; font-size: 1rem; }
+      .app-brand-name { font-size: 0.95rem; }
+      .app-nav-links { gap: 0.18rem !important; }
+      .app-nav-links .nav-btn, .app-nav-links .nav-home { padding: 0.45rem 0.08rem; font-size: 0.68rem; }
+      .overview-hero { display: block; }
+      .overview-hero-edit { margin-top: 1.25rem; }
+      .overview-stats { gap: 0.75rem; }
+      .overview-stat-card { min-height: 6.8rem; gap: 0.65rem; padding: 0.9rem; }
+      .overview-stat-icon { width: 2.65rem; height: 2.65rem; flex-basis: 2.65rem; font-size: 1.1rem; }
+      .overview-stat-value { font-size: 1.8rem; }
+      .overview-stat-label { margin-top: 0.35rem; font-size: 0.78rem; }
+      .overview-section-card { padding: 1.1rem 1rem 0.8rem; }
+      .overview-city-row { gap: 0.7rem; align-items: flex-start; }
+      .overview-city-avatar { width: 2.55rem; height: 2.55rem; flex-basis: 2.55rem; font-size: 1rem; }
+      .overview-city-name { min-width: 4.5rem; padding-top: 0.55rem; font-size: 0.92rem; }
+      .overview-city-badges { justify-content: flex-start; gap: 0.35rem; }
+      .overview-type-badge, .overview-city-total { padding: 0.35rem 0.5rem; font-size: 0.72rem; }
+      .overview-actions { gap: 0.65rem; }
+      .overview-action { min-height: 3rem; padding: 0.6rem 0.5rem; font-size: 0.78rem; }
+      .overview-city-tags { gap: 0.6rem; margin-top: 1.15rem; }
+      .overview-city-tag { min-height: 2.45rem; padding: 0.5rem 0.95rem; font-size: 0.88rem; }
+      .collection-city-list { gap: 1rem; }
+      .collection-city-header { min-height: 4.35rem; gap: 0.8rem; padding: 0.9rem 1rem; }
+      .collection-city-chevron { width: 2rem; height: 2rem; flex-basis: 2rem; font-size: 1.25rem; }
+      .collection-city-name { font-size: 1rem; }
+      .collection-city-grid { gap: 1rem; padding: 1rem; }
+    }
+
+    button { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+    input, textarea { -webkit-user-select: text; user-select: text; }
+
+    /* ============ 时间轴 ============ */
+    .timeline-rail { position: relative; padding-left: 28px; }
+    .timeline-rail::before { content: ''; position: absolute; left: 11px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(180deg, #c7d2fe 0%, #ddd6fe 50%, #fbcfe8 100%); border-radius: 2px; }
+    .timeline-dot { position: absolute; left: -22px; top: 8px; width: 24px; height: 24px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; box-shadow: 0 0 0 4px #fff, 0 2px 8px rgba(99, 102, 241, 0.3); z-index: 1; }
+    .timeline-row { display:block; padding:0.75rem; border-radius:0.875rem; transition: background 0.15s, transform 0.15s, box-shadow 0.15s; }
+    .timeline-row.drag-over { background:#eef2ff; box-shadow: inset 0 0 0 2px #a5b4fc; }
+    .timeline-row.dragging { opacity:0.55; transform:scale(0.99); }
+    .drag-handle { width:44px; min-width:44px; height:44px; border-radius:12px; background:#F0EDFF; color:#5848FF; border:1px solid #C4B5FD; display:flex; align-items:center; justify-content:center; font-size:1.125rem; cursor:grab; touch-action:none; }
+    .drag-handle:active { cursor:grabbing; background:#e0e7ff; }
+    .timeline-action-btn { width:40px; height:40px; border-radius:10px; background:#fff; border:1px solid #e5e7eb; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.9375rem; }
+    .timeline-action-btn:hover { border-color:#c7d2fe; background:#f8fafc; }
+    .timeline-card { background:#f9fafb; border:1px solid #f3f4f6; border-radius:0.75rem; padding:0.875rem; }
+    .slot-drop-zone { min-height:12px; border-radius:0.75rem; }
+    .slot-drop-zone.drag-over { min-height:44px; background:#eef2ff; box-shadow: inset 0 0 0 2px #a5b4fc; }
+
+    /* ============ 统计卡片渐变 ============ */
+    .stat-card-blue { background: linear-gradient(135deg, #3082F6 0%, #5848FF 100%); }
+    .stat-card-violet { background: linear-gradient(135deg, #5848FF 0%, #8B6CFF 100%); }
+    .stat-card-pink { background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%); }
+    .stat-card-cyan { background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%); }
+
+    /* ============ 标签 ============ */
+    .tag-chip { display: inline-block; padding: 3px 10px; border-radius: 9999px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.02em; }
+
+    button { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+    input, textarea { -webkit-user-select: text; user-select: text; }
+
+    /* ============ 图片网格 ============ */
+    .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
+    .photo-thumb { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; cursor: pointer; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.2s; }
+    .photo-thumb:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+    .photo-upload-btn { width: 100%; aspect-ratio: 1; border: 2px dashed #c7d2fe; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #818cf8; background: linear-gradient(135deg, rgba(99,102,241,0.04), rgba(139,92,246,0.04)); cursor: pointer; transition: all 0.2s; }
+    .photo-upload-btn:hover { border-color: var(--brand-500); background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1)); }
+
+    /* ============ 图片预览大图 ============ */
+    .photo-viewer { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .photo-viewer img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+
+    /* Leaflet 自定义样式 */
+    #map-container { border-radius: 0.75rem; overflow: hidden; z-index: 1; min-height: 400px; }
+    .leaflet-container { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; }
+    .trip-marker { background: transparent; border: none; }
+    .trip-marker-inner { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 700; border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+    .leaflet-popup-content-wrapper { border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+    .leaflet-popup-content { margin: 12px 16px; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; }
+    .leaflet-popup-tip-container { display: none; }
+
+    @media (min-width: 768px) {
+      .md-grid-2 { grid-template-columns: repeat(2, 1fr) !important; }
+      .md-grid-3 { grid-template-columns: repeat(3, 1fr) !important; }
+    }
+    @media (max-width: 640px) {
+      .grid-cols-4 { grid-template-columns: repeat(2, 1fr); }
+      .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
+    }
+  </style>
+  <style id="pixel-design-system">
+    :root {
+      --pixel-ink: #1b1a4a;
+      --pixel-purple: #6240d9;
+      --pixel-purple-dark: #3c267f;
+      --pixel-panel: #eeedff;
+      --pixel-panel-soft: #f8f5ff;
+      --pixel-line: #a89de3;
+      --pixel-gold: #f7b72f;
+      --pixel-pink: #e8617d;
+      --pixel-blue: #3b87e8;
+      --pixel-green: #58b77b;
+      --pixel-shadow: 0 5px 0 rgba(48, 27, 111, 0.33), 0 12px 24px rgba(49, 31, 120, 0.13);
+    }
+    html, body { min-height: 100%; }
+    body { background: #211b55; color: var(--pixel-ink); font-family: "Trebuchet MS", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    button, input, textarea, select { font-family: inherit; }
+    .hidden { display: none !important; }
+    .pixel-app-shell { position: relative; min-height: 100vh; overflow-x: hidden; background: linear-gradient(135deg, #d9d4f9 0%, #f4f0ff 47%, #d2d0f3 100%); }
+    .pixel-app-shell::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .16; background-image: repeating-linear-gradient(0deg, rgba(46,31,110,.2) 0, rgba(46,31,110,.2) 1px, transparent 1px, transparent 4px), repeating-linear-gradient(90deg, rgba(255,255,255,.22) 0, rgba(255,255,255,.22) 1px, transparent 1px, transparent 5px); mix-blend-mode: multiply; z-index: 10; }
+    .pixel-topbar { position: fixed; z-index: 40; top: 0; left: 0; right: 0; height: 82px; display: flex; align-items: stretch; padding: 7px 12px; gap: 10px; border-bottom: 4px solid #2c1b69; background: linear-gradient(180deg, #4c3294 0%, #2d216f 100%); box-shadow: 0 4px 0 rgba(126, 92, 223, .55); }
+    .pixel-brand { width: 292px; flex: 0 0 292px; display: flex; align-items: center; gap: 12px; padding: 8px 16px; border: 3px solid #35217b; background: linear-gradient(180deg, #fbfaff 0%, #e6e2ff 100%); box-shadow: inset 0 0 0 2px #cabdf7, 3px 3px 0 #29165c; color: var(--pixel-ink); }
+    .pixel-brand img { width: 46px; height: 46px; object-fit: contain; image-rendering: pixelated; }
+    .pixel-brand strong { display: block; font-size: 22px; line-height: 1; letter-spacing: -1px; }
+    .pixel-brand span { color: #5f3bd5; }
+    .pixel-topnav { min-width: 0; flex: 1; display: flex; gap: 7px; }
+    .pixel-nav-item { min-width: 126px; flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 9px; border: 3px solid #30206f; background: linear-gradient(180deg, #fff 0%, #e9e6ff 100%); box-shadow: inset 0 0 0 2px #c8bff0, 3px 3px 0 #28165d; color: #241866; font-size: 21px; font-weight: 800; text-shadow: 1px 1px 0 #fff; }
+    .pixel-nav-item:hover, .pixel-nav-item.active { color: #fff; background: linear-gradient(180deg, #8454ef 0%, #5329be 100%); text-shadow: 2px 2px 0 #3b187a; }
+    .pixel-nav-icon { width: 30px; height: 30px; object-fit: contain; image-rendering: pixelated; }
+    .pixel-top-actions { width: 150px; display:flex; align-items:center; justify-content:flex-end; gap:10px; }
+    .pixel-avatar, .pixel-settings { width: 52px; height: 52px; padding: 3px; border: 3px solid #33206e; background: #f8f6ff; box-shadow: inset 0 0 0 2px #c9bdf1, 3px 3px 0 #28165d; }
+    .pixel-avatar img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+    .pixel-settings { display: grid; place-items: center; font-size: 28px; }
+    .pixel-sidebar { position: fixed; z-index: 35; top: 82px; left: 0; bottom: 0; width: 292px; padding: 10px 13px 16px; overflow-y: auto; border-right: 4px solid #2d1b69; background: linear-gradient(180deg, #eeeaff 0%, #d6d1fa 100%); box-shadow: inset -4px 0 0 rgba(139,111,221,.45); }
+    .pixel-sidebar-cover { position: relative; min-height: 240px; padding: 14px 10px 0; overflow: hidden; border: 3px solid #3a2480; background-image: linear-gradient(180deg, rgba(34, 25, 105, .18), rgba(34, 25, 105, .15)), url("assets/landing-page-bg.png"); background-size: cover; background-position: center; box-shadow: inset 0 0 0 2px #d0a5ff, 3px 3px 0 #2d1b69; color: #312178; text-align: center; }
+    .pixel-sidebar-cover h2, .pixel-sidebar-cover p { position:relative; z-index:1; }
+    .pixel-sidebar-cover h2 { margin: 0; font-size: 31px; line-height: 1.05; letter-spacing: 3px; }
+    .pixel-sidebar-cover p { margin-top: 6px; font-size: 16px; font-weight: 800; }
+    .pixel-sidebar-cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,.42) 0%, transparent 38%, rgba(25, 14, 91, .16) 100%); pointer-events: none; }
+    .pixel-side-links { display: grid; gap: 7px; margin-top: 12px; }
+    .pixel-side-link { display:flex; align-items:center; gap: 14px; min-height: 50px; padding: 6px 12px; border: 2px solid transparent; color: #26175f; font-size: 18px; font-weight: 800; text-align: left; }
+    .pixel-side-link:hover, .pixel-side-link.active { border-color: #351d83; background: linear-gradient(180deg, #8549ed 0%, #5425bd 100%); box-shadow: 3px 3px 0 #28165d; color: #fff; }
+    .pixel-side-link img { width: 31px; height: 31px; object-fit: contain; image-rendering: pixelated; }
+    .pixel-side-divider { height: 2px; margin: 18px 7px 12px; border-top: 2px dashed #9d8edc; }
+    .pixel-side-tools { display:grid; gap: 7px; }
+    .pixel-side-tool { display:flex; align-items:center; gap:14px; padding: 6px 12px; color: #322274; font-size: 16px; font-weight: 800; text-align:left; }
+    .pixel-side-tool:hover { color: #5b35d0; transform: translateX(3px); }
+    .pixel-side-tool img { width: 29px; height: 29px; object-fit: contain; image-rendering: pixelated; }
+    .pixel-side-tool.danger { color: #d63e44; }
+    .pixel-profile { position: relative; display:flex; align-items:flex-end; gap: 8px; margin-top: 22px; padding: 8px 4px 0; min-height: 205px; border-top: 2px dashed #9d8edc; overflow:hidden; }
+    .pixel-profile img { width: 137px; height: 170px; object-fit: contain; object-position: bottom center; image-rendering: pixelated; }
+    .pixel-profile-copy { align-self: flex-start; margin-top: 16px; padding: 8px 10px; border: 2px solid #7664c5; background: rgba(246,243,255,.86); box-shadow: 3px 3px 0 rgba(58,38,127,.3); color: #352477; font-size: 13px; font-weight: 700; }
+    .pixel-profile-copy strong { display:block; font-size: 16px; }
+    .pixel-main { min-height: 100vh; margin-left: 292px; padding-top: 82px; }
+    .pixel-shell-overview .pixel-topbar { display:none; }
+    .pixel-shell-overview .pixel-sidebar { top:0; }
+    .pixel-shell-overview .pixel-main { padding-top: 0; }
+    .pixel-main-content { position:relative; min-height: calc(100vh - 82px); padding: 26px 26px 34px; }
+    .pixel-shell-overview .pixel-main-content { min-height: 100vh; }
+    .pixel-page { max-width: 1350px; min-height: calc(100vh - 134px); margin: 0 auto; padding: 26px 28px 30px; border: 3px solid #493496; background: linear-gradient(180deg, rgba(253,252,255,.94) 0%, rgba(237,234,255,.94) 100%); box-shadow: inset 0 0 0 2px #d1c9f6, var(--pixel-shadow); }
+    .pixel-page-header { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; margin-bottom:18px; padding-bottom: 12px; border-bottom: 2px dashed #a69bdd; }
+    .pixel-page-header h1 { display:flex; align-items:center; gap:12px; margin:0; font-size: 34px; line-height:1.05; color:#17153f; }
+    .pixel-page-header p { margin: 10px 0 0; color:#5b5a83; font-size: 17px; font-weight:700; }
+    .pixel-heading-icon { width: 41px; height: 41px; object-fit:contain; image-rendering:pixelated; }
+    .pixel-button { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height: 48px; padding: 8px 20px; border:3px solid #3b2389; background:linear-gradient(180deg,#8251ec,#5627c4); box-shadow: 3px 4px 0 #2b1765; color:#fff; font-size:17px; font-weight:800; text-shadow: 2px 2px 0 #3b177b; }
+    .pixel-button:hover { transform: translateY(-2px); filter: brightness(1.05); }
+    .pixel-button.secondary { border-color:#9186d0; background:linear-gradient(180deg,#fff,#ebe8ff); box-shadow: 3px 4px 0 #8f81cb; color:#4230a6; text-shadow:none; }
+    .pixel-button.danger { border-color:#b32636; background:linear-gradient(180deg,#ef5a5f,#c63146); }
+    .pixel-button.small { min-height: 40px; padding: 5px 14px; font-size: 15px; }
+    .pixel-tabs { display:flex; flex-wrap:wrap; gap:14px; margin: 8px 0 18px; }
+    .pixel-tab { min-width: 108px; padding: 9px 18px; border: 3px solid #a99ddf; background:linear-gradient(180deg,#fff,#f0edff); box-shadow: 2px 3px 0 rgba(74,49,155,.23); color:#392582; font-size:18px; font-weight:800; }
+    .pixel-tab.active { border-color:#3f218c; background:linear-gradient(180deg,#8751ee,#5524bf); color:#fff; box-shadow:3px 4px 0 #2a1762; }
+    .pixel-overview { padding:0; background:#ebe8ff; }
+    .pixel-overview-hero { position:relative; min-height: 316px; padding: 45px 56px 34px; overflow:hidden; border-bottom: 4px solid #41288e; background-image: linear-gradient(180deg, rgba(33,23,104,.24), rgba(86,45,156,.16) 58%, rgba(229,225,253,.92) 100%), url("assets/landing-page-bg.png"); background-size:cover; background-position:center 46%; }
+    .pixel-overview-hero::after { content:""; position:absolute; inset:0; pointer-events:none; background: radial-gradient(circle at 77% 20%, rgba(255,255,255,.26), transparent 30%); }
+    .pixel-overview-copy { position:relative; z-index:1; }
+    .pixel-kicker { display:inline-flex; align-items:center; gap:8px; padding: 8px 14px; border:2px solid rgba(255,255,255,.23); background:rgba(84,45,169,.45); color:#ffde65; font-size:17px; font-weight:800; }
+    .pixel-overview-hero h1 { margin: 20px 0 8px; color:#fff; font-size:clamp(56px, 6vw, 88px); line-height:.9; letter-spacing:2px; text-shadow: 4px 4px 0 #2e1b72, 7px 7px 0 rgba(29,14,77,.25); }
+    .pixel-overview-date { color:#fff; font-size:22px; font-weight:700; text-shadow:2px 2px 0 #41308b; }
+    .pixel-city-tags { display:flex; flex-wrap:wrap; gap:12px; margin-top:22px; }
+    .pixel-city-tag { padding:8px 16px; border:2px solid #3b2686; background:rgba(52,34,133,.62); box-shadow: 3px 3px 0 rgba(34,19,87,.35); color:#fff; font-size:17px; font-weight:800; }
+    .pixel-hero-edit { position:absolute; z-index:1; right:42px; bottom:28px; }
+    .pixel-dashboard { padding: 18px 24px 34px; }
+    .pixel-stat-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:15px; }
+    .pixel-stat { display:flex; align-items:center; gap:15px; min-height:112px; padding:14px 18px; border:3px solid #765dc9; background:linear-gradient(180deg,#fbfaff,#e9e6ff); box-shadow: 3px 4px 0 rgba(65,39,143,.22); }
+    .pixel-stat-icon { width:59px; height:59px; display:grid; place-items:center; border:3px solid #8e7bdc; background:#fff; font-size:30px; }
+    .pixel-stat-value { color:#5e39d2; font-size:38px; font-weight:900; line-height:1; }
+    .pixel-stat-label { margin-top:8px; color:#3d3970; font-size:16px; font-weight:800; }
+    .pixel-overview-section { margin-top:18px; padding: 16px 20px 8px; border:3px solid #7660c7; background:linear-gradient(180deg,#fbfaff,#e8e4fb); box-shadow:3px 4px 0 rgba(65,39,143,.2); }
+    .pixel-section-title { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:10px; border-bottom:2px dashed #a69bdd; }
+    .pixel-section-title h2 { margin:0; font-size:22px; }
+    .pixel-city-row { display:flex; align-items:center; gap:14px; width:100%; padding:13px 6px; border-bottom:2px dashed #b8afe3; color:#282157; text-align:left; }
+    .pixel-city-row:last-child { border-bottom:0; }
+    .pixel-city-avatar { width:62px; height:62px; flex:0 0 62px; display:grid; place-items:center; border:3px solid #382281; background:linear-gradient(180deg,#fff7c8 0%,#f7a832 52%,#ee6c22 100%); box-shadow:3px 3px 0 #6f55bf; color:#fff; font-size:28px; font-weight:900; line-height:1; text-shadow:2px 2px 0 #5b278d; }
+    .pixel-city-name { min-width: 110px; font-size:22px; font-weight:900; }
+    .pixel-city-badges { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:9px; flex:1; }
+    .pixel-badge { padding:7px 12px; border:2px solid #b4a8e2; background:#f9f8ff; color:#403b71; font-size:15px; font-weight:800; }
+    .pixel-badge.total { color:#5d39ce; }
+    .pixel-dashboard-actions { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:18px; }
+    .pixel-dashboard-action { min-height:56px; border:3px solid #7767c6; background:#fbfaff; box-shadow:3px 3px 0 rgba(65,39,143,.2); color:#4e36b0; font-size:16px; font-weight:800; }
+    .pixel-dashboard-action.danger { color:#d74248; }
+    .pixel-note { margin-top: 18px; padding:14px 18px; border:3px solid #e4b454; background:#fff4d5; color:#754d19; font-weight:700; }
+    .pixel-collection-city { margin-bottom: 18px; border:3px solid #7660c7; background:linear-gradient(180deg,#fbfaff,#e9e5ff); box-shadow:3px 4px 0 rgba(65,39,143,.2); }
+    .pixel-collection-city-header { display:flex; align-items:center; gap:13px; min-height:70px; padding:10px 18px; border-bottom:3px solid #8b79d0; background:linear-gradient(180deg,#d6d0f7,#beb5eb); color:#2a2064; text-align:left; }
+    .pixel-collection-city-header h2 { margin:0; font-size:25px; }
+    .pixel-collection-city-header .city-count { margin-left:auto; font-size:20px; font-weight:900; color:#5138b2; }
+    .pixel-card-grid { display:grid; gap:18px; padding:18px; }
+    .pixel-card-grid-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .pixel-card-grid-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .pixel-collection-card { position:relative; min-height:195px; padding:17px 18px 15px; border:3px solid #7c6bc6; background:linear-gradient(135deg,#fffefa 0%,#f7f2ff 100%); box-shadow: 3px 4px 0 rgba(65,39,143,.2); overflow:hidden; }
+    .pixel-collection-card::before { content:""; position:absolute; top:-3px; left:-3px; right:-3px; height:8px; background:#7859e3; }
+    .pixel-collection-card.type-amber::before { background:#f2a62a; }
+    .pixel-collection-card.type-rose::before { background:#e7617f; }
+    .pixel-collection-card.type-blue::before { background:#3d8be6; }
+    .pixel-collection-card.type-indigo::before { background:#7759e9; }
+    .pixel-card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:9px; margin-bottom:8px; }
+    .pixel-type-icon { width:46px; height:46px; object-fit:contain; image-rendering:pixelated; }
+    .pixel-card-title { margin:0; color:#191738; font-size:21px; line-height:1.18; font-weight:900; }
+    .pixel-card-address, .pixel-card-note { margin:9px 0 0; color:#5a5a7b; font-size:15px; line-height:1.45; font-weight:700; }
+    .pixel-card-note { color:#5c4c87; }
+    .pixel-card-actions { display:flex; gap:5px; }
+    .pixel-icon-button { width:35px; height:35px; border:2px solid #aaa0d4; background:#fff; color:#5f3ccf; font-size:19px; box-shadow:2px 2px 0 rgba(65,39,143,.18); }
+    .pixel-card-photo { display:flex; gap:6px; margin:9px 0 0; padding:7px; border:2px dashed #e7bf6b; background:#fff4d3; }
+    .pixel-card-photo img { width:60px; height:60px; object-fit:cover; border:2px solid #d2b365; image-rendering:auto; }
+    .pixel-card-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    .pixel-card-tag { padding:4px 8px; border:2px solid #d7b774; background:#fff2c9; color:#754d19; font-size:12px; font-weight:800; }
+    .pixel-empty { min-height: 570px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 26px; border:3px solid #7660c7; background:linear-gradient(180deg,#fbfaff,#f1edff); box-shadow:3px 4px 0 rgba(65,39,143,.2); text-align:center; }
+    .pixel-empty-image { width:260px; height:230px; object-fit:contain; image-rendering:pixelated; }
+    .pixel-empty h2 { margin: 8px 0 5px; font-size:27px; }
+    .pixel-empty p { margin:0 0 20px; color:#6d6a91; font-size:18px; font-weight:700; }
+    .pixel-timeline-panel { padding: 0; border:3px solid #7660c7; background:linear-gradient(180deg,#fbfaff,#f2effd); box-shadow:3px 4px 0 rgba(65,39,143,.2); }
+    .pixel-day-head { display:flex; justify-content:space-between; padding:12px 20px; border-bottom:2px dashed #a69bdd; font-size:21px; font-weight:900; }
+    .pixel-timeline-list { padding:10px 14px 16px; }
+    .pixel-timeline-row { display:flex; align-items:center; gap:15px; min-height:92px; margin:9px 0; padding:10px 12px; border:2px solid #c8bfe5; background:linear-gradient(180deg,#fffefa,#f6f2ff); box-shadow:2px 3px 0 rgba(65,39,143,.15); }
+    .pixel-timeline-row.drag-over { border-color:#6240d9; background:#eee8ff; }
+    .pixel-order { width:49px; height:49px; flex:0 0 49px; display:grid; place-items:center; border:3px solid #fff; border-radius:50%; color:#fff; font-size:23px; font-weight:900; box-shadow:2px 3px 0 rgba(43,28,101,.28); }
+    .pixel-timeline-row:nth-child(4n+1) .pixel-order { background:#6a4be0; }
+    .pixel-timeline-row:nth-child(4n+2) .pixel-order { background:#e96477; }
+    .pixel-timeline-row:nth-child(4n+3) .pixel-order { background:#efac22; }
+    .pixel-timeline-row:nth-child(4n) .pixel-order { background:#59b875; }
+    .pixel-timeline-place { display:flex; align-items:center; gap:14px; min-width:0; flex:1; }
+    .pixel-timeline-place img { width:57px; height:57px; object-fit:contain; image-rendering:pixelated; flex:0 0 57px; }
+    .pixel-timeline-place strong { display:block; color:#1a193b; font-size:21px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pixel-timeline-place span { display:block; margin-top:5px; color:#66658a; font-size:16px; font-weight:700; }
+    .pixel-timeline-actions { display:flex; gap:9px; flex:0 0 auto; }
+    .pixel-timeline-actions button { width:48px; height:48px; border:2px solid #c3b9e0; background:#fff; box-shadow:2px 2px 0 rgba(65,39,143,.16); color:#34237e; font-size:25px; }
+    .pixel-timeline-actions .drag-handle { color:#6240d9; background:#eeeaff; }
+    .pixel-map-shell { display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:16px; }
+    .pixel-map-frame { min-height:480px; border:3px solid #896dbe; background:#e8eef4; box-shadow:inset 0 0 0 2px #f8e4bd, 3px 4px 0 rgba(65,39,143,.2); overflow:hidden; }
+    #map-container { min-height:480px; height:480px !important; border-radius:0; }
+    .pixel-route-list { padding:16px 18px; border:3px solid #7660c7; background:linear-gradient(180deg,#fffaf0,#f4efff); box-shadow:3px 4px 0 rgba(65,39,143,.2); }
+    .pixel-route-list h2 { margin:0 0 10px; font-size:20px; }
+    .pixel-route-row { display:flex; align-items:center; gap:9px; padding:12px 0; border-bottom:2px dashed #ddc9b4; }
+    .pixel-route-row:last-child { border-bottom:0; }
+    .pixel-route-num { width:31px; height:31px; display:grid; place-items:center; flex:0 0 31px; border-radius:50%; background:#6645da; color:#fff; font-weight:900; }
+    .pixel-route-row strong { flex:1; min-width:0; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pixel-route-row span { color:#696688; font-weight:800; }
+    .leaflet-container { font-family: "Trebuchet MS", "PingFang SC", sans-serif; }
+    .pixel-modal .modal-content { max-width: 760px; border:3px solid #5c3cb9; border-radius:0; background:linear-gradient(180deg,#fff,#eeeaff); box-shadow: 8px 8px 0 rgba(37,21,90,.3), 0 25px 60px rgba(31,17,93,.3); }
+    .pixel-modal .modal-content h3 { font-size:27px; color:#1c1846; }
+    .pixel-modal .input { border:2px solid #b0a5df; border-radius:0; background:#fff; }
+    .pixel-modal .btn-primary, .pixel-modal .btn-secondary, .pixel-modal .btn-outline { border-radius:0; }
+    @media (max-width: 1200px) {
+      .pixel-brand { width:230px; flex-basis:230px; }
+      .pixel-sidebar { width:230px; }
+      .pixel-main { margin-left:230px; }
+      .pixel-nav-item { min-width:90px; font-size:17px; }
+      .pixel-top-actions { width:105px; }
+      .pixel-stat-grid { gap:10px; }
+      .pixel-stat { padding:12px; }
+      .pixel-stat-value { font-size:31px; }
+    }
+    @media (max-width: 820px) {
+      .pixel-topbar { height:72px; padding:6px; }
+      .pixel-brand { width:165px; flex-basis:165px; padding:5px 8px; gap:7px; }
+      .pixel-brand img { width:34px; height:34px; }
+      .pixel-brand strong { font-size:16px; }
+      .pixel-nav-item { min-width:54px; padding:4px; font-size:0; }
+      .pixel-nav-icon { width:29px; height:29px; }
+      .pixel-top-actions { width:70px; }
+      .pixel-avatar, .pixel-settings { width:34px; height:34px; font-size:18px; }
+      .pixel-settings { display:none; }
+      .pixel-sidebar { position:static; width:100%; height:auto; padding:8px; border-right:0; border-bottom:3px solid #2d1b69; }
+      .pixel-sidebar-cover { display:none; }
+      .pixel-side-links { grid-template-columns:repeat(6,1fr); gap:4px; margin-top:0; }
+      .pixel-side-link { min-height:45px; justify-content:center; gap:4px; padding:3px; font-size:11px; flex-direction:column; }
+      .pixel-side-link img { width:24px; height:24px; }
+      .pixel-side-divider, .pixel-side-tools, .pixel-profile { display:none; }
+      .pixel-main { margin-left:0; padding-top:0; }
+      .pixel-topbar + .pixel-sidebar { margin-top:72px; }
+      .pixel-shell-overview .pixel-sidebar { margin-top:0; }
+      .pixel-main-content { min-height:0; padding:12px; }
+      .pixel-page { padding:16px 12px 22px; }
+      .pixel-page-header h1 { font-size:25px; }
+      .pixel-page-header p { font-size:13px; }
+      .pixel-stat-grid, .pixel-dashboard-actions { grid-template-columns:repeat(2,1fr); }
+      .pixel-card-grid-2, .pixel-card-grid-3 { grid-template-columns:1fr; }
+      .pixel-map-shell { grid-template-columns:1fr; }
+      .pixel-overview-hero { min-height:260px; padding:28px 22px 25px; }
+      .pixel-overview-hero h1 { font-size:52px; }
+      .pixel-overview-date { font-size:15px; }
+      .pixel-hero-edit { position:static; margin-top:18px; }
+      .pixel-dashboard { padding:12px; }
+      .pixel-city-row { align-items:flex-start; flex-wrap:wrap; }
+      .pixel-city-badges { justify-content:flex-start; width:100%; padding-left:76px; }
+      .pixel-timeline-row { align-items:flex-start; flex-wrap:wrap; }
+      .pixel-timeline-actions { width:100%; justify-content:flex-end; }
+    }
+
+    /* Updated design assets: use the supplied pixel frames and icon family. */
+    .pixel-sidebar-cover { background-image: linear-gradient(180deg, rgba(34,25,105,.18), rgba(34,25,105,.15)), url("assets/design/landing-bg.png"); }
+    .pixel-page { position:relative; border-color:#4a2f91; overflow:hidden; }
+    .pixel-page::after { display:none; }
+    .pixel-page > * { position:relative; z-index:1; }
+    .pixel-overview-hero {
+      border:0;
+      border-radius:34px;
+      background-image:
+        linear-gradient(90deg, rgba(27,16,84,.68) 0%, rgba(39,26,116,.44) 43%, rgba(39,26,116,.12) 78%),
+        linear-gradient(180deg, rgba(21,13,73,.04) 0%, rgba(21,13,73,.08) 52%, rgba(17,10,58,.5) 100%),
+        url("assets/design/hero-eiffel.png");
+      background-size:cover;
+      background-position:center 48%;
+      box-shadow:inset 0 0 0 4px rgba(63,39,141,.72), 4px 5px 0 rgba(45,27,105,.18);
+    }
+    .pixel-overview-hero::before { display:none; }
+    .pixel-overview-hero::after { z-index:0; }
+    .pixel-overview-copy, .pixel-hero-edit { z-index:4; }
+    .pixel-stat-icon { border:0; background:transparent; }
+    .pixel-stat-icon img { width:100%; height:100%; object-fit:contain; image-rendering:pixelated; transform:scale(1.55); }
+    .pixel-inline-icon { width:25px; height:25px; vertical-align:middle; object-fit:contain; image-rendering:pixelated; }
+    .pixel-type-icon { width:54px; height:54px; }
+    .pixel-topnav .pixel-nav-item { gap:4px; }
+    .pixel-nav-icon { width:46px; height:46px; margin:-8px -2px; }
+    .pixel-side-link { gap:7px; }
+    .pixel-side-link img { width:48px; height:48px; margin:-7px -4px; }
+    .pixel-side-tool { gap:7px; }
+    .pixel-side-tool img { width:42px; height:42px; margin:-6px -3px; }
+    .pixel-collection-city-header { gap:18px; }
+    .pixel-collection-city-header > span:first-child { display:inline-flex; align-items:center; justify-content:center; width:43px; min-width:43px; font-size:40px !important; line-height:1; }
+    .pixel-collection-city-header h2 { font-size:33px; }
+    .pixel-collection-city-header .city-count { font-size:29px; }
+    .pixel-place-emoji { display:inline-flex; align-items:center; justify-content:center; width:43px; min-width:43px; font-size:29px; line-height:1; }
+    .pixel-timeline-place { gap:8px; }
+    .pixel-timeline-place .pixel-place-emoji { font-size:30px; }
+    .pixel-route-icon { display:inline-flex; align-items:center; justify-content:center; width:32px; min-width:32px; font-size:24px; line-height:1; }
+    .pixel-sidebar-mascot { min-height:360px; display:flex; align-items:flex-start; justify-content:center; margin-bottom:12px; overflow:visible; border:3px solid #3a2480; background:linear-gradient(180deg,#f8f5ff,#d9d3fb); box-shadow:inset 0 0 0 2px #d0a5ff,3px 3px 0 #2d1b69; }
+    .pixel-sidebar-mascot img { width:320px; height:380px; max-width:none; object-fit:contain; image-rendering:pixelated; }
+    .pixel-dashboard-action { display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+    .pixel-action-icon { width:52px; height:52px; flex:0 0 52px; object-fit:contain; image-rendering:pixelated; transform:scale(1.15); }
+    .pixel-page-header h1 { gap:18px; }
+    .pixel-page-header h1 .pixel-heading-icon { width:86px; height:86px; margin:-14px -4px; object-fit:contain; image-rendering:pixelated; transform:scale(1.15); }
+    .pixel-section-title h2 { display:flex; align-items:center; gap:10px; }
+    .pixel-section-icon { width:46px; height:46px; margin:-6px -2px; object-fit:contain; image-rendering:pixelated; transform:scale(1.15); }
+    .pixel-button-icon { width:34px; height:34px; margin:-4px; object-fit:contain; image-rendering:pixelated; transform:scale(1.15); }
+    .pixel-sort-icon { width:42px; height:42px; margin:-8px -3px; object-fit:contain; image-rendering:pixelated; transform:scale(1.12); }
+    .pixel-side-links { width:100%; max-width:270px; margin-left:auto; margin-right:auto; }
+    .pixel-side-link { width:100%; min-height:58px; box-sizing:border-box; justify-content:flex-start; text-align:left; }
+    .pixel-side-link img { width:56px; height:56px; margin:-9px -8px; }
+    .pixel-sidebar-mascot { padding-top:20px; box-sizing:border-box; }
+    .pixel-collection-city { width:100%; }
+    .pixel-collection-city-header { width:100%; min-height:88px; box-sizing:border-box; padding:12px 28px; justify-content:flex-start; background:#d6d0f7; border:3px solid #6e55ba; border-bottom-width:4px; }
+    .pixel-collection-city-header .city-count { margin-left:0; }
+    .pixel-collection-city-header > span:last-child { margin-left:14px; }
+    /* Responsive navigation: desktop uses the sidebar, mobile uses the top bar. */
+    .pixel-topbar { display:none; }
+    .pixel-sidebar { top:0; }
+    .pixel-main { padding-top:0; }
+    .pixel-main-content { min-height:100vh; }
+    .pixel-sidebar-mascot { min-height:360px; margin:0 0 8px; border:0; background:transparent; box-shadow:none; }
+    .pixel-sidebar-product { min-height:128px; display:flex; align-items:center; justify-content:center; padding:12px 8px; color:#4f2c9f; font-size:42px; font-weight:900; letter-spacing:1px; text-shadow:2px 2px 0 #fff,4px 4px 0 rgba(73,43,145,.16); }
+    .pixel-sidebar-product strong { display:block; }
+    .pixel-product-divider { width:calc(100% - 18px); height:2px; margin:0 auto 18px; border-top:2px dashed #9d8edc; }
+    .pixel-sidebar > .pixel-side-divider { margin-top:20px; }
+    .pixel-collection-card, .pixel-collection-city, .pixel-timeline-panel, .pixel-route-list { border-color:#6e55ba; }
+    .pixel-card-actions .pixel-icon-button { font-size:0; background-position:center; background-repeat:no-repeat; background-size:25px 25px; }
+    .pixel-card-actions .pixel-icon-button:first-child { background-image:url("assets/design/icon-star.png"); }
+    .pixel-card-actions .pixel-icon-button:nth-child(2) { background-image:url("assets/design/icon-bookmark.png"); }
+    .pixel-card-actions .pixel-icon-button:nth-child(3) { background-image:url("assets/design/icon-trash.png"); }
+    .pixel-empty-image { width:260px; height:250px; }
+    .pixel-profile img { width:150px; height:176px; }
+    @media (max-width: 820px) {
+      .pixel-topbar { display:flex; }
+      .pixel-sidebar, .pixel-sidebar-mascot { display:none; }
+      .pixel-main { margin-left:0; padding-top:72px; }
+      .pixel-shell-overview .pixel-topbar { display:flex; }
+      .pixel-shell-overview .pixel-main { padding-top:72px; }
+      .pixel-brand { display:none; }
+      .pixel-topnav { width:100%; gap:1px; }
+      .pixel-nav-item { min-width:0; padding:2px 0; font-size:0; gap:0; overflow:hidden; }
+      .pixel-nav-icon { width:58px; height:58px; margin:-3px -1px; }
+      .pixel-top-actions { display:none; }
+      .pixel-page-header h1 { gap:12px; }
+      .pixel-page-header h1 .pixel-heading-icon { width:64px; height:64px; margin:-12px -4px; }
+      .pixel-section-icon { width:38px; height:38px; margin:-4px -2px; }
+      .pixel-button-icon { width:28px; height:28px; margin:-3px; }
+      .pixel-sort-icon { width:34px; height:34px; margin:-6px -2px; }
+      .pixel-page::after { background-image:url("assets/design/frame-panel-portrait.png"); }
+      .pixel-overview-hero::before { display:none; }
+    }
+
+    /* Keep every non-landing view inside one rounded viewport frame. The main
+       content owns the only page-level scroll, so the document itself stays still. */
+    html, body { width:100%; height:100%; overflow:hidden; }
+    body { background:#fff; }
+    #app { width:100%; height:100%; min-height:100%; }
+    .pixel-app-shell { position:relative; width:calc(100vw - clamp(1.5rem, 3vw, 3.5rem)); max-width:1780px; height:calc(100svh - clamp(1.5rem, 3vw, 3.5rem)); min-height:0; margin:clamp(.75rem, 1.5vw, 1.75rem) auto; overflow:hidden; border-radius:clamp(1.25rem, 2.5vw, 2rem); box-shadow:0 28px 70px rgba(17,24,39,.18); }
+    .pixel-app-shell::before { position:absolute; inset:0; }
+    .pixel-topbar { position:absolute; left:0; right:0; top:0; width:100%; }
+    .pixel-sidebar { position:absolute; top:0; bottom:0; left:0; display:flex; flex-direction:column; align-items:center; padding:18px 13px 20px; overflow:hidden; }
+    .pixel-sidebar-product { flex:0 0 auto; min-height:clamp(86px, 13svh, 128px); }
+    .pixel-product-divider { flex:0 0 auto; }
+    .pixel-side-links { flex:0 0 auto; }
+    .pixel-sidebar > .pixel-side-divider { flex:0 0 auto; width:calc(100% - 18px); margin:clamp(14px, 2svh, 24px) auto 0; }
+    .pixel-sidebar-mascot { flex:1 1 auto; width:100%; min-height:0; margin:0; padding:clamp(32px, 4.2svh, 52px) 14px clamp(32px, 4.2svh, 52px); display:flex; align-items:center; justify-content:center; overflow:hidden; box-sizing:border-box; }
+    .pixel-sidebar-mascot img { width:auto; height:min(390px, 48svh, calc(100% - 8px)); max-width:calc(100% - 24px); object-fit:contain; object-position:center center; image-rendering:pixelated; }
+    .pixel-main { height:100%; min-height:0; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; scrollbar-gutter:stable; }
+    .pixel-main-content, .pixel-shell-overview .pixel-main-content { min-height:100%; }
+    .pixel-page { min-height:100%; }
+    @media (max-width:1200px) and (min-width:821px) {
+      .pixel-sidebar { width:230px; }
+      .pixel-main { margin-left:230px; }
+      .pixel-sidebar-product { min-height:clamp(74px, 11svh, 110px); font-size:34px; }
+      .pixel-side-links { max-width:214px; }
+      .pixel-side-link { min-height:52px; }
+      .pixel-side-link img { width:48px; height:48px; }
+      .pixel-sidebar-mascot img { height:min(330px, 40svh, calc(100% - 8px)); max-width:calc(100% - 20px); }
+    }
+    @media (max-height:780px) and (min-width:821px) {
+      .pixel-sidebar { padding-top:12px; padding-bottom:12px; }
+      .pixel-sidebar-product { min-height:74px; font-size:34px; }
+      .pixel-product-divider { margin-bottom:10px; }
+      .pixel-side-links { gap:3px; }
+      .pixel-side-link { min-height:48px; font-size:18px; }
+      .pixel-side-link img { width:44px; height:44px; margin:-7px -7px; }
+      .pixel-sidebar > .pixel-side-divider { margin-top:10px; }
+      .pixel-sidebar-mascot { padding:24px 12px 26px; }
+      .pixel-sidebar-mascot img { height:min(220px, calc(100% - 8px)); max-width:calc(100% - 28px); }
+    }
+    @media (max-width:820px) {
+      .pixel-app-shell { width:calc(100vw - 1rem); height:calc(100svh - 1rem); margin:.5rem auto; border-radius:1.25rem; }
+      .pixel-sidebar { display:none; }
+      .pixel-main { margin-left:0; padding-top:72px; }
+      .pixel-shell-overview .pixel-main { margin-left:0; padding-top:72px; }
+      .pixel-page { min-height:100%; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div id="modal-content" class="modal-content"></div>
+  </div>
+  <div id="photo-viewer" class="photo-viewer hidden" onclick="closePhotoViewer()">
+    <img id="photo-viewer-img" src="">
+  </div>
+  <div id="sync-toast" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:0.5rem 1rem;border-radius:0.5rem;font-size:0.875rem;z-index:300;display:none;opacity:0;transition:opacity 0.3s;box-shadow:0 4px 12px rgba(0,0,0,0.3);"></div>
+
+  <script>
+/* 旅记 TripFlow v3 - 纯单文件离线版 */
+
+var STORE_KEY = 'tripflow_data_v3';
+var LIBRARY_KEY = 'tripflow_library_v1';
+
+var DEFAULT_DATA = {
+  trip: {
+    title: '罗马3日游',
+    startDate: '2026-05-01',
+    days: 3,
+    cities: ['罗马'],
+    notes: '💶 货币：欧元 EUR\n💳 建议备100欧现金，Apple Pay不是万能的！！Visa实体卡大部分地方可用，但一些小咖啡馆和市集只收现金。\n\n📱 提前下载离线地图，意大利流量卡可在机场买'
+  },
+  collections: [
+    { id: 'c1', city: '罗马', type: '景点', name: '斗兽场 Colosseum', address: 'Piazza del Colosseo, 1, Roma', lat: 41.8902, lng: 12.4922, note: '建议早上8:30第一批入场，人少光线好', photos: [], tags: ['必去', '古罗马', '打卡'] },
+    { id: 'c2', city: '罗马', type: '景点', name: '梵蒂冈博物馆', address: 'Viale Vaticano, Roma', lat: 41.9065, lng: 12.4536, note: '必须提前网上预约！周一闭馆。西斯廷礼拜堂禁止拍照', photos: [], tags: ['必去', '博物馆'] },
+    { id: 'c3', city: '罗马', type: '景点', name: '特莱维喷泉 Trevi Fountain', address: 'Piazza di Trevi, Roma', lat: 41.9009, lng: 12.4833, note: '晚上去灯光效果好，白天人太多。记得背对喷泉扔硬币', photos: [], tags: ['夜景', '打卡'] },
+    { id: 'c4', city: '罗马', type: '餐厅', name: 'Roscioli 罗马传统餐厅', address: 'Via dei Giubbonari, 21, Roma', lat: 41.8954, lng: 12.4706, note: '推荐Carbonara和Tonnarelli cacio e pepe。需要预约', photos: [], tags: ['必吃', '意面'] },
+    { id: 'c5', city: '罗马', type: '餐厅', name: 'Pizzarium 罗马最好吃的披萨', address: 'Via della Meloria, 43, Roma', lat: 41.9078, lng: 12.4497, note: '站着的披萨店，按重量卖。品种多到选不过来', photos: [], tags: ['必吃', '披萨'] },
+    { id: 'c6', city: '罗马', type: '住宿', name: 'Hotel Ponte Sisto', address: 'Via dei Pettinari, 64, Roma', lat: 41.8922, lng: 12.4698, note: '位置好，步行可达大部分景点。顶楼露台可以看罗马全景', photos: [], tags: ['位置好'] },
+    { id: 'c7', city: '罗马', type: '景点', name: '万神殿 Pantheon', address: 'Piazza della Rotonda, Roma', lat: 41.8986, lng: 12.4769, note: '免费参观。圆顶洞口光线在正午最壮观', photos: [], tags: ['免费', '古罗马'] },
+    { id: 'c8', city: '罗马', type: '景点', name: "圣天使堡", address: 'Lungotevere Castello, 50, Roma', lat: 41.9031, lng: 12.4663, note: '登顶可以俯瞰罗马全城和台伯河。从梵蒂冈步行过来很近', photos: [], tags: ['俯瞰', '打卡'] }
+  ],
+  schedule: {
+    'day1': [
+      { id: 's1', slot: 'morning', collectionId: 'c1', customNote: '' },
+      { id: 's2', slot: 'morning', collectionId: 'c7', customNote: '步行10分钟' },
+      { id: 's3', slot: 'noon', collectionId: 'c4', customNote: '步行15分钟去吃饭' },
+      { id: 's4', slot: 'noon', collectionId: 'c3', customNote: '步行去特莱维喷泉' },
+      { id: 's5', slot: 'night', collectionId: 'c6', customNote: '回酒店休息' }
+    ],
+    'day2': [
+      { id: 's6', slot: 'morning', collectionId: 'c2', customNote: '梵蒂冈博物馆，提前预约' },
+      { id: 's7', slot: 'noon', collectionId: 'c5', customNote: '打车去Pizzarium吃午餐' },
+      { id: 's8', slot: 'noon', collectionId: 'c8', customNote: '圣天使堡' },
+      { id: 's9', slot: 'evening', collectionId: 'c3', customNote: '傍晚再去特莱维看日落' }
+    ],
+    'day3': [
+      { id: 's10', slot: 'morning', collectionId: 'c7', customNote: '万神殿正午光线' },
+      { id: 's11', slot: 'morning', collectionId: 'c1', customNote: '二刷斗兽场二层' },
+      { id: 's12', slot: 'noon', collectionId: 'c4', customNote: '最后一顿罗马餐' }
+    ]
+  }
+};
+
+var appData = null;
+var tripLibrary = null;
+var currentView = 'landing';
+var currentDay = 1;
+var LANDING_SEEN_KEY = 'tripflow_landing_seen_v1';
+var editingCollectionId = null;
+var editingScheduleId = null;
+var modalCloseTimer = null;
+var scheduleDragId = null;
+var scheduleTouchDragging = false;
+var geocodeRequestSeq = 0;
+var placeSearchTimer = null;
+var DEFAULT_COLLECTION_TYPES = [
+  { name: '景点', emoji: '🏛️', color: 'amber' },
+  { name: '餐厅', emoji: '🍝', color: 'rose' },
+  { name: '住宿', emoji: '🏨', color: 'indigo' },
+  { name: '交通', emoji: '🚉', color: 'blue' }
+];
+
+// ============ Toast 提示 ============
+var syncToastTimer = null;
+function showSyncToast(msg) {
+  var toast = document.getElementById('sync-toast');
+  if (!toast) return;
+  toast.textContent = '🔄 ' + msg;
+  toast.style.display = 'block';
+  toast.style.opacity = '1';
+  if (syncToastTimer) clearTimeout(syncToastTimer);
+  syncToastTimer = setTimeout(function() {
+    toast.style.opacity = '0';
+    setTimeout(function() { toast.style.display = 'none'; }, 300);
+  }, 2000);
+}
+
+function cloneData(data) {
+  return JSON.parse(JSON.stringify(data));
+}
+
+function createBlankTripData() {
+  return {
+    trip: { title: '我的出行计划', startDate: '', days: 1, cities: [], notes: '' },
+    collections: [],
+    customTypes: [],
+    schedule: { 'day1': [] }
+  };
+}
+
+function getScheduleCount(data) {
+  var total = 0;
+  Object.keys((data && data.schedule) || {}).forEach(function(key) {
+    total += ((data.schedule || {})[key] || []).length;
+  });
+  return total;
+}
+
+function normalizeTripData(data) {
+  if (!data || !data.trip) data = createBlankTripData();
+  if (!data.collections) data.collections = [];
+  if (!data.customTypes) data.customTypes = [];
+  if (!data.schedule) data.schedule = { 'day1': [] };
+  if (!data.trip.cities) data.trip.cities = [];
+  if (!data.trip.days) data.trip.days = 1;
+  for (var day = 1; day <= data.trip.days; day++) {
+    if (!data.schedule['day' + day]) data.schedule['day' + day] = [];
+  }
+  data.collections.forEach(function(collection) {
+    if (!collection.formatted_address && collection.address) collection.formatted_address = collection.address;
+    if (!collection.place_id) collection.place_id = '';
+    if (!collection.displayNameZh) collection.displayNameZh = '';
+    if (!collection.photos) collection.photos = [];
+    if (!collection.typeEmoji) {
+      var meta = getTypeMeta(collection);
+      collection.typeEmoji = meta.emoji;
+    }
+  });
+  Object.keys(data.schedule || {}).forEach(function(dayKey) {
+    (data.schedule[dayKey] || []).forEach(function(item) {
+      delete item.slot;
+      delete item.time;
+      delete item.timeHint;
+    });
+  });
+  return data;
+}
+
+function getTripRecordTitle(data) {
+  return (data && data.trip && data.trip.title) ? data.trip.title : '未命名行程';
+}
+
+function createTripRecord(data, status) {
+  data = normalizeTripData(cloneData(data || createBlankTripData()));
+  var now = new Date().toISOString();
+  return {
+    id: uid(),
+    title: getTripRecordTitle(data),
+    status: status || 'archived',
+    createdAt: now,
+    updatedAt: now,
+    data: data
+  };
+}
+
+function getTripRecords() {
+  return (tripLibrary && tripLibrary.trips) ? tripLibrary.trips : [];
+}
+
+function getActiveTripRecord() {
+  var records = getTripRecords();
+  for (var i = 0; i < records.length; i++) {
+    if (records[i].id === tripLibrary.activeTripId) return records[i];
+  }
+  return null;
+}
+
+function getTripRecordById(id) {
+  var records = getTripRecords();
+  for (var i = 0; i < records.length; i++) {
+    if (records[i].id === id) return records[i];
+  }
+  return null;
+}
+
+function setOnlyActiveTrip(id) {
+  tripLibrary.activeTripId = id;
+  getTripRecords().forEach(function(record) {
+    record.status = record.id === id ? 'active' : 'archived';
+  });
+}
+
+function saveTripLibrary() {
+  try { localStorage.setItem(LIBRARY_KEY, JSON.stringify(tripLibrary)); } catch(e) {}
+}
+
+function saveLocalOnly() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(appData)); } catch(e) {}
+}
+
+function syncActiveRecordFromApp(status) {
+  if (!tripLibrary) tripLibrary = { activeTripId: '', trips: [] };
+  if (!appData) appData = createBlankTripData();
+  appData = normalizeTripData(appData);
+  var record = getActiveTripRecord();
+  if (!record) {
+    record = createTripRecord(appData, status || 'active');
+    tripLibrary.trips.unshift(record);
+    tripLibrary.activeTripId = record.id;
+  } else {
+    record.data = cloneData(appData);
+    record.title = getTripRecordTitle(appData);
+    record.updatedAt = new Date().toISOString();
+    if (status) record.status = status;
+  }
+  if (record.status === 'active') setOnlyActiveTrip(record.id);
+  return record;
+}
+
+function loadData() {
+  tripLibrary = { activeTripId: '', trips: [] };
+  try {
+    var savedLibrary = localStorage.getItem(LIBRARY_KEY);
+    if (savedLibrary) {
+      tripLibrary = JSON.parse(savedLibrary);
+      if (!tripLibrary || !tripLibrary.trips) tripLibrary = { activeTripId: '', trips: [] };
+      tripLibrary.trips.forEach(function(record) {
+        record.data = normalizeTripData(record.data);
+        record.title = record.title || getTripRecordTitle(record.data);
+        record.status = record.status || 'archived';
+        record.createdAt = record.createdAt || new Date().toISOString();
+        record.updatedAt = record.updatedAt || record.createdAt;
+      });
+    } else {
+      var saved = localStorage.getItem(STORE_KEY);
+      if (saved) {
+        var legacyData = normalizeTripData(JSON.parse(saved));
+        var migratedRecord = createTripRecord(legacyData, 'active');
+        tripLibrary = { activeTripId: migratedRecord.id, trips: [migratedRecord] };
+        saveTripLibrary();
+      }
+    }
+  } catch(e) {
+    tripLibrary = { activeTripId: '', trips: [] };
+  }
+  if (tripLibrary.trips.length) {
+    var active = getActiveTripRecord() || tripLibrary.trips[0];
+    setOnlyActiveTrip(active.id);
+    appData = normalizeTripData(cloneData(active.data));
+    saveTripLibrary();
+    saveLocalOnly();
+  } else {
+    // 首次打开直接展示示例行程，让设计稿中的核心产品页面可立即体验。
+    appData = normalizeTripData(cloneData(DEFAULT_DATA));
+    syncActiveRecordFromApp('active');
+    saveTripLibrary();
+    saveLocalOnly();
+  }
+}
+function saveData() {
+  syncActiveRecordFromApp('active');
+  saveTripLibrary();
+  saveLocalOnly();
+}
+function resetData() { if (confirm('确定要把当前行程恢复为示例数据吗？旅行档案里的其他行程不会被删除。')) { appData = normalizeTripData(cloneData(DEFAULT_DATA)); saveData(); render(); } }
+function clearData() { if (confirm('确定要清空当前行程吗？旅行档案里的其他行程不会被删除。')) { appData = createBlankTripData(); saveData(); render(); } }
+
+function uid() { return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6); }
+function getCollectionById(id) { for (var i=0;i<appData.collections.length;i++){ if(appData.collections[i].id===id) return appData.collections[i]; } return null; }
+function getCustomTypeByName(name) {
+  var list = appData.customTypes || [];
+  for (var i=0; i<list.length; i++) {
+    if (list[i].name === name) return list[i];
+  }
+  return null;
+}
+function getTypeMeta(typeOrCollection, emojiOverride) {
+  var type = typeof typeOrCollection === 'object' ? typeOrCollection.type : typeOrCollection;
+  var fallbackEmoji = typeof typeOrCollection === 'object' ? typeOrCollection.typeEmoji : emojiOverride;
+  for (var i=0; i<DEFAULT_COLLECTION_TYPES.length; i++) {
+    if (DEFAULT_COLLECTION_TYPES[i].name === type) return DEFAULT_COLLECTION_TYPES[i];
+  }
+  var customType = getCustomTypeByName(type);
+  if (customType) return { name: customType.name, emoji: customType.emoji || fallbackEmoji || '🏷️', color: 'gray' };
+  return { name: type || '其他', emoji: fallbackEmoji || '📍', color: 'gray' };
+}
+function getTypeIcon(typeOrCollection, emojiOverride) { return getTypeMeta(typeOrCollection, emojiOverride).emoji; }
+function getTypeColor(typeOrCollection, emojiOverride) { return getTypeMeta(typeOrCollection, emojiOverride).color; }
+function getAllCollectionTypes() {
+  var types = DEFAULT_COLLECTION_TYPES.slice();
+  (appData.customTypes || []).forEach(function(item) {
+    types.push({ name: item.name, emoji: item.emoji || '🏷️', color: 'gray', custom: true });
+  });
+  return types;
+}
+function getDisplayName(collection) {
+  if (!collection) return '';
+  return collection.displayNameZh || collection.displayName || collection.name || '';
+}
+
+// 时段定义
+function hasValidCoord(collection) {
+  if (!collection) return false;
+  var lat = parseFloat(collection.lat);
+  var lng = parseFloat(collection.lng);
+  return isFinite(lat) && isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+}
+
+function getCoordStatusText(collection) {
+  if (hasValidCoord(collection)) return '✅ 已识别地图位置';
+  return '⚠️ 还没有识别到地图位置';
+}
+
+function buildPlaceQuery(collectionLike) {
+  var parts = [];
+  if (collectionLike.name && parts.join(' ').indexOf(collectionLike.name) < 0) parts.push(collectionLike.name);
+  if (collectionLike.city && parts.join(' ').indexOf(collectionLike.city) < 0) parts.push(collectionLike.city);
+  return parts.join(', ').trim();
+}
+
+function searchPlacesWithJsonp(collectionLike) {
+  var query = buildPlaceQuery(collectionLike);
+  if (!query) throw new Error('缺少地点名称');
+  return new Promise(function(resolve, reject) {
+    var callbackName = '__tripflowGeocodeCb' + (++geocodeRequestSeq);
+    var script = document.createElement('script');
+    var timer = null;
+    function cleanup() {
+      if (timer) clearTimeout(timer);
+      if (script.parentNode) script.parentNode.removeChild(script);
+      try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+    }
+    window[callbackName] = function(result) {
+      cleanup();
+      if (!result || !result.length) {
+        reject(new Error('没有找到匹配地点'));
+        return;
+      }
+      var candidates = result.map(function(item) {
+        var lat = parseFloat(item.lat);
+        var lng = parseFloat(item.lon);
+        var fallbackName = (item.display_name || query).split(',')[0].trim();
+        var candidateName = fallbackName;
+        if (item.namedetails) {
+          candidateName = item.namedetails.name || item.namedetails.official_name || item.namedetails.local_name || fallbackName;
+        }
+        return {
+          name: candidateName || query,
+          formatted_address: item.display_name || query,
+          latitude: lat,
+          longitude: lng,
+          place_id: String(item.place_id || ''),
+          raw: item
+        };
+      }).filter(function(item) {
+        return isFinite(item.latitude) && isFinite(item.longitude);
+      });
+      if (!candidates.length) {
+        reject(new Error('返回的位置数据不完整'));
+        return;
+      }
+      resolve(candidates);
+    };
+    script.onerror = function() {
+      cleanup();
+      reject(new Error('地图服务暂时不可用'));
+    };
+    timer = setTimeout(function() {
+      cleanup();
+      reject(new Error('识别超时'));
+    }, 12000);
+    script.src = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&accept-language=zh-CN,en&addressdetails=1&namedetails=1&json_callback=' + callbackName + '&q=' + encodeURIComponent(query);
+    document.head.appendChild(script);
+  });
+}
+
+function getCollectionFormData() {
+  return {
+    name: (document.getElementById('col-name') || {}).value || '',
+    city: (document.getElementById('col-city') || {}).value || ''
+  };
+}
+
+function getSelectedPlaceFromModal() {
+  var placeId = (document.getElementById('col-place-id') || {}).value || '';
+  var formattedAddress = (document.getElementById('col-formatted-address') || {}).value || '';
+  var lat = parseFloat((document.getElementById('col-lat') || {}).value || '');
+  var lng = parseFloat((document.getElementById('col-lng') || {}).value || '');
+  if (!formattedAddress || !isFinite(lat) || !isFinite(lng)) return null;
+  return {
+    place_id: placeId,
+    formatted_address: formattedAddress,
+    latitude: lat,
+    longitude: lng
+  };
+}
+
+function updateLocationStatus(message, tone) {
+  var status = document.getElementById('location-status');
+  if (!status) return;
+  var color = tone === 'ok' ? '#166534' : (tone === 'warn' ? '#92400e' : '#6b7280');
+  var background = tone === 'ok' ? '#dcfce7' : (tone === 'warn' ? '#fef3c7' : '#f8fafc');
+  status.style.color = color;
+  status.style.background = background;
+  status.textContent = message;
+}
+
+function renderSelectedPlaceSummary(place) {
+  var summary = document.getElementById('selected-place-summary');
+  if (!summary) return;
+  if (!place) {
+    summary.innerHTML = '<div style="padding:0.625rem 0.75rem;border-radius:0.625rem;background:#fff7ed;color:#9a3412;font-size:0.8125rem;">还没有确认地点，请从下方候选列表中选一个。</div>';
+    return;
+  }
+  summary.innerHTML = '<div style="padding:0.625rem 0.75rem;border-radius:0.625rem;background:#ecfdf5;border:1px solid #bbf7d0;">' +
+    '<div style="font-size:0.75rem;color:#166534;font-weight:700;margin-bottom:4px;">已确认地点</div>' +
+    '<div style="font-size:0.8125rem;color:#1f2937;line-height:1.5;">' + escapeHtml(place.formatted_address) + '</div>' +
+    '</div>';
+}
+
+function clearSelectedPlace() {
+  var placeId = document.getElementById('col-place-id');
+  var formattedAddress = document.getElementById('col-formatted-address');
+  var lat = document.getElementById('col-lat');
+  var lng = document.getElementById('col-lng');
+  if (placeId) placeId.value = '';
+  if (formattedAddress) formattedAddress.value = '';
+  if (lat) lat.value = '';
+  if (lng) lng.value = '';
+  renderSelectedPlaceSummary(null);
+}
+
+function renderPlaceCandidates(candidates) {
+  window._placeCandidates = candidates || [];
+  var list = document.getElementById('place-candidate-list');
+  if (!list) return;
+  if (!window._placeCandidates.length) {
+    list.innerHTML = '<div style="padding:0.75rem;border-radius:0.625rem;background:#fff;color:#6b7280;font-size:0.8125rem;border:1px dashed #d1d5db;">还没有候选地点。输入地图检索名称后，系统会自动搜索。</div>';
+    return;
+  }
+  var html = '';
+  window._placeCandidates.forEach(function(candidate, idx) {
+    html += '<button type="button" onclick="selectPlaceCandidate('+idx+')" style="width:100%;text-align:left;padding:0.75rem;border-radius:0.75rem;border:1px solid #e5e7eb;background:#fff;margin-top:'+(idx===0?'0':'0.5rem')+';">';
+    html += '<div style="font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:4px;">'+escapeHtml(candidate.name)+'</div>';
+    html += '<div style="font-size:0.75rem;color:#6b7280;line-height:1.5;">'+escapeHtml(candidate.formatted_address)+'</div>';
+    html += '</button>';
+  });
+  list.innerHTML = html;
+}
+
+function markPlaceQueryDirty() {
+  clearSelectedPlace();
+  renderPlaceCandidates([]);
+  updateLocationStatus('⚠️ 地点关键词已变更，请从候选地点里重新确认', 'warn');
+  if (placeSearchTimer) clearTimeout(placeSearchTimer);
+  var formData = getCollectionFormData();
+  if (!formData.name.trim()) return;
+  placeSearchTimer = setTimeout(function() {
+    searchPlaceCandidatesFromModal({ silent: true });
+  }, 500);
+}
+
+async function searchPlaceCandidatesFromModal(options) {
+  var opts = options || {};
+  var btn = document.getElementById('locate-btn');
+  var collectionLike = getCollectionFormData();
+  if (!collectionLike.name.trim()) {
+    if (!opts.silent) alert('请先输入地点名称，例如 Colosseum 或 Louvre Museum');
+    updateLocationStatus('⚠️ 请先输入地点名称', 'warn');
+    return [];
+  }
+  try {
+    if (btn) { btn.disabled = true; btn.textContent = '搜索中...'; }
+    updateLocationStatus('🔎 正在搜索候选地点...', 'info');
+    var candidates = await searchPlacesWithJsonp(collectionLike);
+    renderPlaceCandidates(candidates);
+    updateLocationStatus('📍 找到 '+candidates.length+' 个候选地点，请点选正确地点', 'info');
+    return candidates;
+  } catch (error) {
+    renderPlaceCandidates([]);
+    updateLocationStatus('⚠️ 没找到候选地点，请补充城市或换个更常见的地点名', 'warn');
+    if (!opts.silent) {
+      alert('暂时没找到这个地点。\n\n建议这样输入：\n1. 地点名，例如：Colosseum\n2. 如果结果不准，再补城市，例如：Colosseum + Rome\n3. 连锁店请补城市，例如：Starbucks Tokyo');
+    }
+    return [];
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔎 搜索候选地点'; }
+  }
+}
+
+function selectPlaceCandidate(index) {
+  var candidate = (window._placeCandidates || [])[index];
+  if (!candidate) return;
+  document.getElementById('col-formatted-address').value = candidate.formatted_address;
+  document.getElementById('col-place-id').value = candidate.place_id;
+  document.getElementById('col-lat').value = candidate.latitude;
+  document.getElementById('col-lng').value = candidate.longitude;
+  renderSelectedPlaceSummary(candidate);
+  updateLocationStatus('✅ 已确认地点，可直接保存', 'ok');
+}
+
+function openPlaceSearchFromModal() {
+  var query = buildPlaceQuery(getCollectionFormData());
+  if (!query) { alert('请先输入地点名称'); return; }
+  window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query), '_blank');
+}
+
+function renderTypeButtons(selectedType, selectedEmoji) {
+  return getAllCollectionTypes().map(function(type) {
+    var active = selectedType === type.name;
+    return '<button onclick="selectType(this,\''+escapeJsString(type.name)+'\',\''+escapeJsString(type.emoji)+'\')" class="type-btn" style="padding:0.375rem 0.75rem;border-radius:0.5rem;font-size:0.875rem;border:1px solid '+(active?'#4f46e5':'#d1d5db')+';'+(active?'background:#4f46e5;color:#fff;':'color:#4b5563;')+'">'+type.emoji+' '+escapeHtml(type.name)+'</button>';
+  }).join('');
+}
+
+function toggleCustomTypeBuilder() {
+  var builder = document.getElementById('custom-type-builder');
+  if (!builder) return;
+  builder.classList.toggle('hidden');
+  if (!builder.classList.contains('hidden')) {
+    var nameInput = document.getElementById('new-type-name');
+    if (nameInput) nameInput.focus();
+  }
+}
+
+function createCustomTypeFromModal() {
+  var nameInput = document.getElementById('new-type-name');
+  var emojiInput = document.getElementById('new-type-emoji');
+  var name = nameInput ? nameInput.value.trim() : '';
+  var emoji = emojiInput ? emojiInput.value.trim() : '';
+  if (!name) { alert('请输入标签名称'); return; }
+  if (!emoji) { alert('请选择一个 emoji 作为标签图标'); return; }
+  var duplicate = getAllCollectionTypes().some(function(type) { return type.name === name; });
+  if (duplicate) { alert('这个标签名称已经存在了'); return; }
+  appData.customTypes.push({ id: uid(), name: name, emoji: emoji });
+  saveData();
+  var selector = document.getElementById('type-selector');
+  if (selector) selector.innerHTML = renderTypeButtons(name, emoji) + '<input id="col-type" type="hidden" value="'+escapeHtml(name)+'"><input id="col-typeEmoji" type="hidden" value="'+escapeHtml(emoji)+'">';
+  selectType(null, name, emoji);
+  if (nameInput) nameInput.value = '';
+  if (emojiInput) emojiInput.value = '🏷️';
+  var builder = document.getElementById('custom-type-builder');
+  if (builder) builder.classList.add('hidden');
+}
+
+function calcDistanceRaw(la1,ln1,la2,ln2) {
+  var R=6371,dLat=(la2-la1)*Math.PI/180,dLng=(ln2-ln1)*Math.PI/180;
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function calcDistance(la1,ln1,la2,ln2) { var d=calcDistanceRaw(la1,ln1,la2,ln2); if(d<1) return Math.round(d*1000)+'m'; return d.toFixed(1)+'km'; }
+function escapeHtml(s) { if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escapeJsString(s) { if(!s) return ''; return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function nl2br(s) { return escapeHtml(s).replace(/\n/g,'<br>'); }
+
+// 图片查看器
+function openPhotoViewer(src) {
+  document.getElementById('photo-viewer-img').src = src;
+  document.getElementById('photo-viewer').classList.remove('hidden');
+}
+function closePhotoViewer() {
+  document.getElementById('photo-viewer').classList.add('hidden');
+}
+
+function markLandingSeen() {
+  try { localStorage.setItem(LANDING_SEEN_KEY, '1'); } catch(e) {}
+}
+
+function archiveCurrentTripIfNeeded() {
+  var active = getActiveTripRecord();
+  if (active) {
+    syncActiveRecordFromApp('archived');
+  }
+}
+
+function activateTrip(id) {
+  var record = getTripRecordById(id);
+  if (!record) return;
+  markLandingSeen();
+  var active = getActiveTripRecord();
+  if (active && active.id !== record.id) syncActiveRecordFromApp('archived');
+  appData = normalizeTripData(cloneData(record.data));
+  setOnlyActiveTrip(record.id);
+  record.data = cloneData(appData);
+  record.title = getTripRecordTitle(appData);
+  record.updatedAt = new Date().toISOString();
+  saveTripLibrary();
+  saveLocalOnly();
+  currentView = 'overview';
+  closeModal();
+  render();
+}
+
+function deleteArchivedTrip(id) {
+  var record = getTripRecordById(id);
+  if (!record) return;
+  if (record.id === tripLibrary.activeTripId) {
+    alert('当前行程不能在这里删除。如需清空内容，请回到概览页使用“清空当前行程”。');
+    return;
+  }
+  var title = record.title || getTripRecordTitle(record.data);
+  if (!confirm('确定删除已归档行程“' + title + '”吗？删除后无法从旅行档案恢复。')) return;
+  tripLibrary.trips = getTripRecords().filter(function(item) {
+    return item.id !== id;
+  });
+  saveTripLibrary();
+  showSyncToast('已删除归档行程');
+  openTripLibraryModal();
+}
+
+function continueTrip() {
+  var records = getTripRecords();
+  if (!records.length) {
+    startNewTrip();
+    return;
+  }
+  var active = getActiveTripRecord() || records[0];
+  activateTrip(active.id);
+}
+
+function createTripFromData(data, shouldEdit) {
+  markLandingSeen();
+  if (!tripLibrary) tripLibrary = { activeTripId: '', trips: [] };
+  archiveCurrentTripIfNeeded();
+  var record = createTripRecord(data || createBlankTripData(), 'active');
+  tripLibrary.trips.unshift(record);
+  setOnlyActiveTrip(record.id);
+  appData = normalizeTripData(cloneData(record.data));
+  saveTripLibrary();
+  saveLocalOnly();
+  currentView = 'overview';
+  render();
+  if (shouldEdit) editTrip();
+}
+
+function startNewTrip() {
+  createTripFromData(createBlankTripData(), true);
+}
+
+function openExampleTrip() {
+  createTripFromData(DEFAULT_DATA, false);
+}
+
+function renderLandingTripPicker() {
+  var records = getTripRecords();
+  if (!records.length) return '';
+  var active = getActiveTripRecord() || records[0];
+  var archived = records.filter(function(record) {
+    return !active || record.id !== active.id;
+  });
+  function renderTripCard(record, suffix) {
+    var data = normalizeTripData(cloneData(record.data));
+    var meta = data.collections.length + ' 个收藏 · ' + getScheduleCount(data) + ' 个行程';
+    return '<button class="landing-trip-card" onclick="activateTrip(\'' + escapeJsString(record.id) + '\')">' +
+      '<span><strong>' + escapeHtml(record.title || getTripRecordTitle(data)) + '</strong><span>' + escapeHtml(meta) + '</span></span>' +
+      '<span>' + suffix + '</span>' +
+    '</button>';
+  }
+  var html = '<div class="landing-trip-picker">';
+  html += '<div class="landing-trip-picker-title">当前行程</div>';
+  html += '<div class="landing-trip-list">' + renderTripCard(active, '当前') + '</div>';
+  if (archived.length) {
+    html += '<div class="landing-trip-picker-title" style="margin-top:0.875rem;">已归档行程</div>';
+    html += '<div class="landing-trip-list">' + archived.map(function(record) { return renderTripCard(record, '归档'); }).join('') + '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderLanding() {
+  var hasTrips = getTripRecords().length > 0;
+  var actions = hasTrips ?
+    '<div class="landing-actions"><button class="landing-cta" onclick="startNewTrip()">新建旅程</button></div>' :
+    '<div class="landing-actions"><button class="landing-cta" onclick="startNewTrip()">新建旅程</button><button class="landing-secondary" onclick="openExampleTrip()">查看示例</button></div>';
+  return '<main class="landing-page">' +
+    '<div class="landing-shell">' +
+      '<section class="landing-hero">' +
+        '<div class="landing-copy-block">' +
+          '<h1 class="landing-title">TripFlow</h1>' +
+          '<p class="landing-copy">Plan Your Trip</p>' +
+          actions +
+          renderLandingTripPicker() +
+        '</div>' +
+      '</section>' +
+    '</div>' +
+  '</main>';
+}
+
+// ============ 导航 ============
+function renderNav() {
+  var items = [
+    {key:'landing', label:'首页', icon:'assets/icons/backpack.png'},
+    {key:'overview', label:'概览', icon:'assets/icons/map.png'},
+    {key:'collections', label:'收藏', icon:'assets/icons/camera.png'},
+    {key:'timeline', label:'行程', icon:'assets/icons/compass.png'},
+    {key:'map', label:'地图', icon:'assets/icons/map.png'},
+    {key:'share', label:'分享', icon:'assets/icons/signpost.png'}
+  ];
+  var h = '<header class="pixel-topbar">';
+  h += '<button class="pixel-brand" onclick="switchView(\'overview\')"><img src="assets/logo.png" alt=""><span><strong>旅记 <span>TripFlow</span></strong></span></button>';
+  h += '<nav class="pixel-topnav">';
+  items.forEach(function(it) {
+    var active = currentView === it.key || (it.key === 'share' && currentView !== 'landing' && currentView === 'share');
+    var action = it.key === 'share' ? 'openShareModal()' : 'switchView(\''+it.key+'\')';
+    h += '<button onclick="'+action+'" class="pixel-nav-item'+(active?' active':'')+'"><img class="pixel-nav-icon" src="'+it.icon+'" alt="">'+it.label+'</button>';
+  });
+  h += '</nav><div class="pixel-top-actions"><button class="pixel-avatar" onclick="openTripLibraryModal()"><img src="assets/characters/traveler.png" alt="旅行者"></button><button class="pixel-settings" onclick="editTrip()">⚙</button></div></header>';
+  h += '<aside class="pixel-sidebar">';
+  h += '<div class="pixel-sidebar-cover"><h2>'+escapeHtml((appData && appData.trip && appData.trip.cities && appData.trip.cities[0]) || 'PISA').toUpperCase()+'</h2><p>意大利 · 托斯卡纳</p></div>';
+  h += '<nav class="pixel-side-links">';
+  items.slice(0,5).forEach(function(it) {
+    var active = currentView === it.key;
+    var action = it.key === 'landing' ? 'switchView(\'landing\')' : 'switchView(\''+it.key+'\')';
+    h += '<button onclick="'+action+'" class="pixel-side-link'+(active?' active':'')+'"><img src="'+it.icon+'" alt="">'+it.label+'</button>';
+  });
+  h += '</nav><div class="pixel-side-divider"></div><div class="pixel-side-tools">';
+  h += '<button class="pixel-side-tool" onclick="openTripLibraryModal()"><img src="'+pixelIconAsset('library')+'" alt="">旅行档案</button>';
+  h += '<button class="pixel-side-tool" onclick="exportActiveTripFile()"><img src="'+pixelIconAsset('export')+'" alt="">导出文件</button>';
+  h += '<button class="pixel-side-tool" onclick="resetData()"><img src="'+pixelIconAsset('reset')+'" alt="">恢复示例数据</button>';
+  h += '<button class="pixel-side-tool danger" onclick="clearData()"><img src="'+pixelIconAsset('clear')+'" alt="">清空当前行程</button></div>';
+  h += '<div class="pixel-profile"><img src="assets/characters/traveler.png" alt="旅行者"><div class="pixel-profile-copy"><strong>小海豹</strong>Lv.12 探索家<br><span>860 / 1200 XP</span></div></div>';
+  h += '</aside>';
+  return h;
+}
+
+// ============ 概览（修改：合并支付/签证到备注） ============
+function renderOverview() {
+  var t = appData.trip;
+  var startStr = t.startDate ? new Date(t.startDate).toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'}) : '未设置';
+  var end = t.startDate ? new Date(new Date(t.startDate).getTime()+(t.days-1)*86400000).toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'}) : '';
+  var byCity = {};
+  appData.collections.forEach(function(c){ if(!byCity[c.city]) byCity[c.city]=[]; byCity[c.city].push(c); });
+  var totalSched = 0; Object.keys(appData.schedule).forEach(function(k){ totalSched += appData.schedule[k].length; });
+  var displayTitle = t.title || (t.days + '日游');
+  var cityTags = (t.cities || []).map(function(c){ return '<span class="pixel-city-tag">★ '+escapeHtml(c)+'</span>'; }).join('');
+  var h = '<main class="pixel-main-content pixel-overview-content">';
+  h += '<section class="pixel-overview-hero"><div class="pixel-overview-copy"><div class="pixel-kicker">★ 当前行程</div><h1>'+escapeHtml(displayTitle)+'</h1><p class="pixel-overview-date">'+escapeHtml(startStr)+(end?' → '+escapeHtml(end):'')+' · '+t.days+'天</p><div class="pixel-city-tags">'+cityTags+'</div></div><button class="pixel-button small pixel-hero-edit" onclick="editTrip()">编辑行程</button></section>';
+  h += '<div class="pixel-dashboard"><section class="pixel-stat-grid">';
+  h += '<div class="pixel-stat"><div class="pixel-stat-icon">📅</div><div><div class="pixel-stat-value">'+t.days+'</div><div class="pixel-stat-label">出行天数</div></div></div>';
+  h += '<div class="pixel-stat"><div class="pixel-stat-icon">⭐</div><div><div class="pixel-stat-value">'+appData.collections.length+'</div><div class="pixel-stat-label">收藏数量</div></div></div>';
+  h += '<div class="pixel-stat"><div class="pixel-stat-icon">🗺️</div><div><div class="pixel-stat-value">'+totalSched+'</div><div class="pixel-stat-label">行程安排</div></div></div>';
+  h += '<div class="pixel-stat"><div class="pixel-stat-icon">📍</div><div><div class="pixel-stat-value">'+Object.keys(byCity).length+'</div><div class="pixel-stat-label">途经城市</div></div></div>';
+  h += '</section>';
+
+  var cityHtml = '';
+  var cKeys = Object.keys(byCity);
+  if (cKeys.length === 0) {
+    cityHtml = '<div class="overview-empty">还没有收藏任何内容，去发现心仪的地点吧。</div>';
+  } else cKeys.forEach(function(city, cityIndex) {
+    var items = byCity[city], byType = {};
+    items.forEach(function(it){ byType[it.type]=(byType[it.type]||0)+1; });
+    var badges = Object.keys(byType).map(function(tp){ return '<span class="pixel-badge">'+getTypeIcon(tp)+' '+byType[tp]+'</span>'; }).join('');
+    cityHtml += '<button class="pixel-city-row" onclick="switchView(\'collections\')"><span class="pixel-city-avatar">'+(cityIndex+1)+'</span><span class="pixel-city-name">'+escapeHtml(city)+'</span><span class="pixel-city-badges">'+badges+'<span class="pixel-badge total">共'+items.length+'项　›</span></span></button>';
+  });
+  h += '<section class="pixel-overview-section"><div class="pixel-section-title"><h2>⭐ 收藏概览</h2><button class="pixel-button secondary small" onclick="switchView(\'collections\')">查看全部　›</button></div><div>'+cityHtml+'</div></section>';
+
+  if (t.notes) h += '<section class="pixel-note"><strong>📝 出行提醒</strong><p style="margin-top:6px;line-height:1.7;">'+nl2br(t.notes)+'</p></section>';
+
+  h += '<section class="pixel-dashboard-actions"><button class="pixel-dashboard-action" onclick="openTripLibraryModal()"><img class="pixel-action-icon" src="'+pixelIconAsset('library')+'" alt="">旅行档案</button><button class="pixel-dashboard-action" onclick="exportActiveTripFile()"><img class="pixel-action-icon" src="'+pixelIconAsset('export')+'" alt="">导出文件</button><button class="pixel-dashboard-action" onclick="resetData()"><img class="pixel-action-icon" src="'+pixelIconAsset('reset')+'" alt="">恢复示例数据</button><button class="pixel-dashboard-action danger" onclick="clearData()"><img class="pixel-action-icon" src="'+pixelIconAsset('clear')+'" alt="">清空当前行程</button></section>';
+  h += '</div>';
+  h += '</main>';
+  return h;
+}
+
+// ============ 收藏 ============
+// 城市折叠状态
+var collapsedCities = {};
+
+function renderCollections() {
+  var byCity = {};
+  appData.collections.forEach(function(c){ if(!byCity[c.city]) byCity[c.city]=[]; byCity[c.city].push(c); });
+  var h = '<div class="max-w-6xl px-4 py-6 space-y-4" style="max-width:72rem;margin:0 auto;padding:1.5rem 1rem;">';
+  var collectionHeaderAction = appData.collections.length > 0 ? '<button onclick="openCollectionModal()" class="btn-primary">+ 添加收藏</button>' : '';
+  h += '<div class="flex items-center justify-between"><h2 class="font-bold" style="font-size:1.375rem;letter-spacing:-0.01em;">⭐ 我的收藏</h2>'+collectionHeaderAction+'</div>';
+  if (appData.collections.length===0) {
+    h += '<div class="bg-white rounded-xl border border-gray-200" style="min-height:27rem;padding:3.75rem 1rem 4rem;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">';
+    h += '<img src="空收藏.png" alt="" style="width:min(15rem,62vw);height:min(15rem,62vw);object-fit:contain;margin:0 auto 0.25rem;opacity:0.92;">';
+    h += '<h3 style="font-size:1.125rem;font-weight:800;color:#111827;margin-bottom:0.5rem;">还没有收藏任何地点</h3>';
+    h += '<p class="text-sm text-gray-500" style="margin-bottom:1.5rem;">去发现心仪的地点吧！</p>';
+    h += '<button onclick="openCollectionModal()" class="btn-primary" style="padding:0.8rem 1.6rem;font-size:1rem;">+ 添加收藏</button>';
+    h += '</div>';
+  } else {
+    h += '<div class="collection-city-list">';
+    Object.keys(byCity).forEach(function(city) {
+      var items = byCity[city];
+      var collapsed = collapsedCities[city];
+      var doneCount = items.filter(function(c){ return c.done; }).length;
+      h += '<div class="mod-card collection-city-group">';
+      h += '<div onclick="toggleCity(\''+escapeHtml(city)+'\')" class="collection-city-header" role="button" tabindex="0" aria-expanded="'+(!collapsed)+'">';
+      h += '<span class="collection-city-chevron'+(collapsed?'':' is-open')+'">›</span>';
+      h += '<span class="collection-city-name">'+escapeHtml(city)+'</span>';
+      h += '<span class="collection-city-progress">'+doneCount+'/'+items.length+'</span>';
+      h += '</div>';
+      if (!collapsed) {
+        h += '<div class="collection-city-grid md-grid-3">';
+        items.forEach(function(c){ h += renderCollectionCard(c); });
+        h += '</div>';
+      }
+      h += '</div>';
+    });
+    h += '</div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+function toggleCity(city) {
+  collapsedCities[city] = !collapsedCities[city];
+  render();
+}
+
+function toggleDone(id) {
+  var c = getCollectionById(id);
+  if (c) {
+    c.done = !c.done;
+    saveData();
+    render();
+  }
+}
+
+function renderCollectionCard(c) {
+  var cm = { amber:{border:'#fcd34d',bg:'linear-gradient(135deg,#fffbeb,#fff7ed)',badge:'#fef3c7',text:'#92400e',gradient:'linear-gradient(135deg,#fbbf24,#f97316)'}, rose:{border:'#fda4af',bg:'linear-gradient(135deg,#fff1f2,#fdf2f8)',badge:'#ffe4e6',text:'#9f1239',gradient:'linear-gradient(135deg,#f43f5e,#ec4899)'}, indigo:{border:'#a5b4fc',bg:'linear-gradient(135deg,#eef2ff,#f5f3ff)',badge:'#e0e7ff',text:'#3730a3',gradient:'linear-gradient(135deg,#6366f1,#8b5cf6)'}, blue:{border:'#93c5fd',bg:'linear-gradient(135deg,#eff6ff,#f0f9ff)',badge:'#dbeafe',text:'#1d4ed8',gradient:'linear-gradient(135deg,#3b82f6,#0ea5e9)'}, gray:{border:'#e2e8f0',bg:'linear-gradient(135deg,#f8fafc,#f1f5f9)',badge:'#f1f5f9',text:'#475569',gradient:'linear-gradient(135deg,#94a3b8,#cbd5e1)'} };
+  var col = cm[getTypeColor(c)] || cm.gray;
+  var tagsHtml = '';
+  if (c.tags && c.tags.length) {
+    tagsHtml = '<div class="flex flex-wrap gap-1">';
+    c.tags.forEach(function(tg){ tagsHtml += '<span style="padding:0.25rem 0.5rem;background:'+col.badge+';color:'+col.text+';border-radius:9999px;font-size:0.6875rem;font-weight:600;">'+escapeHtml(tg)+'</span>'; });
+    tagsHtml += '</div>';
+  }
+  var photosHtml = '';
+  if (c.photos && c.photos.length) {
+    photosHtml = '<div class="photo-grid mt-2">';
+    c.photos.forEach(function(ph) {
+      photosHtml += '<img class="photo-thumb" src="'+ph+'" onclick="openPhotoViewer(\''+ph+'\')">';
+    });
+    photosHtml += '</div>';
+  }
+  // 打卡状态
+  var doneStyle = c.done ? 'opacity:0.55;' : '';
+  var doneBadge = c.done ? '<span style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;padding:0.25rem 0.5rem;border-radius:9999px;font-size:0.625rem;font-weight:700;">✓ 已打卡</span>' : '';
+
+  var h = '<div class="card-wrap mod-card" style="padding:0;position:relative;overflow:hidden;'+doneStyle+'">';
+  h += '<div style="height:5px;background:'+col.gradient+';"></div>';
+  h += '<div style="padding:1rem 1rem 0.875rem;">';
+  h += '<div class="flex items-start justify-between mb-2"><span style="font-size:1.625rem;">'+getTypeIcon(c)+'</span>';
+  h += '<div class="flex gap-1 card-actions">';
+  h += '<button onclick="toggleDone(\''+c.id+'\')" style="font-size:1rem;color:'+(c.done?'#22c55e':'#94a3b8')+';padding:0.25rem;border-radius:9999px;background:#f8fafc;" title="标记打卡">'+(c.done?'✅':'⬜')+'</button>';
+  h += '<button onclick="openCollectionModal(\''+c.id+'\')" style="font-size:1rem;color:#94a3b8;padding:0.25rem;border-radius:9999px;background:#f8fafc;">✏️</button>';
+  h += '<button onclick="deleteCollection(\''+c.id+'\')" style="font-size:1rem;color:#94a3b8;padding:0.25rem;border-radius:9999px;background:#f8fafc;">🗑️</button>';
+  h += '</div></div>';
+  h += '<div class="flex items-center gap-2 mb-1">';
+  h += '<h4 class="font-semibold text-gray-900 flex-1" style="font-size:1rem;letter-spacing:-0.01em;">'+escapeHtml(getDisplayName(c))+'</h4>';
+  h += doneBadge;
+  h += '</div>';
+  h += '<p class="text-xs text-gray-500 mb-2" style="display:flex;align-items:center;gap:0.25rem;">📍 '+escapeHtml(c.formatted_address || c.address || '未确认地点')+'</p>';
+  if (!hasValidCoord(c)) {
+    h += '<button onclick="openCollectionModal(\''+c.id+'\')" style="margin-bottom:0.5rem;padding:0.375rem 0.625rem;border-radius:9999px;background:#fef3c7;color:#92400e;font-size:0.75rem;font-weight:600;">⚠️ 确认候选地点</button>';
+  }
+  if (c.note) h += '<p class="text-xs text-gray-600 mb-2 leading-relaxed">📝 '+escapeHtml(c.note)+'</p>';
+  if (c.photos && c.photos.length) {
+    h += '<div style="background:'+col.badge+';border-radius:0.75rem;padding:0.625rem;margin-bottom:0.625rem;"><p class="text-xs leading-relaxed" style="color:'+col.text+';margin-bottom:6px;font-weight:600;">📸 照片参考（'+c.photos.length+'张）</p>'+photosHtml+'</div>';
+  }
+  h += tagsHtml;
+  h += '</div></div>';
+  return h;
+}
+
+// ============ 时间轴（纯序号 + 拖拽排序） ============
+function renderTimeline() {
+  var days = appData.trip.days || 1;
+  var tripDate = appData.trip.startDate ? new Date(appData.trip.startDate) : null;
+  var dayKey = 'day'+currentDay;
+  var sched = appData.schedule[dayKey] || [];
+
+  var h = '<div class="max-w-4xl px-4 py-6 space-y-4" style="max-width:56rem;margin:0 auto;padding:1.5rem 1rem;">';
+  var headerActions = '<button onclick="optimizeRoute()" class="btn-outline"><img class="pixel-sort-icon" src="assets/design/icon-folder.png" alt="">智能排序</button>';
+  if (sched.length > 0) headerActions += '<button onclick="openScheduleModal()" class="btn-primary">+ 添加行程</button>';
+  h += '<div class="flex items-center justify-between"><div><h2 class="text-xl font-bold">📅 行程安排</h2><p class="text-xs text-gray-500 mt-1">拖动或上下移动即可调整当天路线。</p></div><div class="flex gap-2">'+headerActions+'</div></div>';
+
+  // 天数
+  h += '<div class="flex gap-2 overflow-x-auto pb-1">';
+  for (var d=0; d<days; d++) {
+    var dt = tripDate ? new Date(tripDate.getTime()+d*86400000) : null;
+    var ds = dt ? (dt.getMonth()+1)+'月'+dt.getDate()+'日' : '第'+(d+1)+'天';
+    var cls = currentDay===(d+1) ? 'nav-btn active' : 'nav-btn';
+    var st = currentDay===(d+1) ? '' : 'border:1px solid #e5e7eb;background:#fff;';
+    h += '<button onclick="switchDay('+(d+1)+')" class="'+cls+'" style="'+st+'">'+ds+'</button>';
+  }
+  h += '</div>';
+
+  h += '<div class="bg-white rounded-xl border border-gray-200 overflow-hidden">';
+  h += '<div style="padding:0.625rem 1rem;background:#f9fafb;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;">';
+  h += '<span class="font-semibold text-gray-700" style="font-size:0.9375rem;">第 '+currentDay+' 天</span>';
+  h += '<span class="text-xs text-gray-400">'+sched.length+' 项</span>';
+  h += '</div>';
+  if (sched.length === 0) {
+    h += '<div style="min-height:24rem;padding:3.5rem 1rem 3.75rem;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">';
+    h += '<img src="空行程.png" alt="" style="width:min(15rem,62vw);height:min(15rem,62vw);object-fit:contain;margin:0 auto 0.25rem;opacity:0.92;">';
+    h += '<h3 style="font-size:1.125rem;font-weight:800;color:#111827;margin-bottom:0.5rem;">暂无安排</h3>';
+    h += '<p class="text-sm text-gray-500" style="margin-bottom:1.5rem;">创建你的第一个旅行计划吧！</p>';
+    h += '<button onclick="openScheduleModal()" class="btn-primary" style="padding:0.8rem 1.6rem;font-size:1rem;">+ 创建行程</button>';
+    h += '</div>';
+  } else {
+    h += '<div style="padding:0.5rem;">';
+    sched.forEach(function(it, idx) {
+      var col = getCollectionById(it.collectionId);
+      if (col) {
+        h += renderTimelineItem({id:it.id, order:idx+1, customNote:it.customNote, collection:col}, idx, sched);
+      }
+    });
+    h += '</div>';
+  }
+  h += '</div>';
+
+  h += '</div>';
+  return h;
+}
+
+function renderTimelineItem(item, idx, all) {
+  var c = item.collection;
+  var dotColors = {amber:'#fbbf24',rose:'#fb7185',indigo:'#818cf8',blue:'#60a5fa',gray:'#9ca3af'};
+  var dot = dotColors[getTypeColor(c)] || '#9ca3af';
+  var next = all[idx+1] ? getCollectionById(all[idx+1].collectionId) : null;
+  var distHtml = '';
+  if (next && hasValidCoord(c) && hasValidCoord(next)) {
+    distHtml = '<span class="text-xs text-gray-400">→ 距离下一站 '+calcDistance(c.lat,c.lng,next.lat,next.lng)+'</span>';
+  }
+  // 出片参考缩略图
+  var photoThumb = '';
+  if (c.photos && c.photos.length) {
+    photoThumb = '<div class="flex gap-1 mt-1">';
+    c.photos.slice(0,3).forEach(function(ph) {
+      photoThumb += '<img src="'+ph+'" style="width:32px;height:32px;object-fit:cover;border-radius:4px;border:1px solid #e5e7eb;" onclick="openPhotoViewer(\''+ph+'\')">';
+    });
+    if (c.photos.length > 3) photoThumb += '<span class="text-xs text-gray-400" style="line-height:32px;">+'+(c.photos.length-3)+'</span>';
+    photoThumb += '</div>';
+  }
+
+  var h = '<div class="timeline-row" data-schedule-id="'+item.id+'" ondragover="dragOverSchedule(event)" ondragleave="clearDragOver(event)" ondrop="dropSchedule(event,\''+item.id+'\')">';
+  h += '<div class="timeline-card">';
+  h += '<div class="flex items-start justify-between gap-3" style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.75rem;">';
+  h += '<div class="flex-1 min-w-0">';
+  h += '<div class="flex items-center gap-2 mb-2" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">';
+  h += '<div style="width:1.75rem;height:1.75rem;background:'+dot+';border-radius:9999px;color:#fff;font-size:0.8125rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+item.order+'</div>';
+  h += '<span style="font-size:1rem;">'+getTypeIcon(c)+'</span>';
+  h += '<span class="font-medium text-sm text-gray-900" style="font-size:0.95rem;line-height:1.5;">'+escapeHtml(getDisplayName(c))+'</span>';
+  h += '</div>';
+  if (item.customNote) h += '<p class="text-xs text-gray-500 mb-2" style="margin-bottom:0.5rem;">'+escapeHtml(item.customNote)+'</p>';
+  if (distHtml) h += '<div style="margin-bottom:0.5rem;">'+distHtml+'</div>';
+  h += photoThumb;
+  h += '</div>';
+  h += '<div style="display:flex;flex-direction:column;gap:0.375rem;flex-shrink:0;">';
+  h += '<button type="button" class="drag-handle" draggable="true" ondragstart="startScheduleDrag(event,\''+item.id+'\')" ondragend="endScheduleDrag(event)" ontouchstart="startScheduleTouch(event,\''+item.id+'\')" ontouchmove="moveScheduleTouch(event)" ontouchend="endScheduleTouch(event)" ontouchcancel="cancelScheduleTouch()" title="按住拖拽排序" aria-label="按住拖拽排序">⠿</button>';
+  h += '<div style="display:flex;gap:0.375rem;">';
+  h += '<button class="timeline-action-btn" onclick="moveSchedule(\''+item.id+'\',-1)" style="color:#6b7280;" title="上移">↑</button>';
+  h += '<button class="timeline-action-btn" onclick="moveSchedule(\''+item.id+'\',1)" style="color:#6b7280;" title="下移">↓</button>';
+  h += '</div>';
+  h += '<div style="display:flex;gap:0.375rem;">';
+  h += '<button class="timeline-action-btn" onclick="openScheduleModal(\''+item.id+'\')" style="color:#6b7280;" title="编辑">✏️</button>';
+  h += '<button class="timeline-action-btn" onclick="deleteSchedule(\''+item.id+'\')" style="color:#ef4444;" title="删除">✕</button>';
+  h += '</div>';
+  h += '</div>';
+  h += '</div>';
+  h += '</div>';
+  h += '</div>';
+  return h;
+}
+
+function moveSchedule(id, dir) {
+  var dayKey = 'day'+currentDay;
+  var sched = appData.schedule[dayKey] || [];
+  // 找到当前项
+  var idx = -1;
+  for (var i=0; i<sched.length; i++) { if (sched[i].id===id) { idx=i; break; } }
+  if (idx < 0) return;
+  var swapIdx = idx + dir;
+  if (swapIdx < 0) return; // 已到边界
+  if (swapIdx >= sched.length) return;
+  // 交换
+  var tmp = sched[idx];
+  sched[idx] = sched[swapIdx];
+  sched[swapIdx] = tmp;
+  saveData(); render();
+}
+
+function startScheduleDrag(event, id) {
+  scheduleDragId = id;
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', id);
+  }
+  var row = event.target.closest('.timeline-row');
+  if (row) row.classList.add('dragging');
+}
+
+function endScheduleDrag(event) {
+  scheduleDragId = null;
+  document.querySelectorAll('.drag-over,.dragging').forEach(function(node) { node.classList.remove('drag-over', 'dragging'); });
+}
+
+function startScheduleTouch(event, id) {
+  scheduleDragId = id;
+  scheduleTouchDragging = true;
+  var row = event.target.closest('.timeline-row');
+  if (row) row.classList.add('dragging');
+}
+
+function moveScheduleTouch(event) {
+  if (!scheduleTouchDragging) return;
+  event.preventDefault();
+  document.querySelectorAll('.drag-over').forEach(function(node) { node.classList.remove('drag-over'); });
+  var touch = event.touches && event.touches[0];
+  if (!touch) return;
+  var target = document.elementFromPoint(touch.clientX, touch.clientY);
+  if (!target) return;
+  var row = target.closest('.timeline-row');
+  if (row && row.getAttribute('data-schedule-id') !== scheduleDragId) {
+    row.classList.add('drag-over');
+  }
+}
+
+function endScheduleTouch(event) {
+  if (!scheduleTouchDragging) return;
+  var touch = event.changedTouches && event.changedTouches[0];
+  var target = touch ? document.elementFromPoint(touch.clientX, touch.clientY) : null;
+  if (target) {
+    var row = target.closest('.timeline-row');
+    if (row && row.getAttribute('data-schedule-id') !== scheduleDragId) {
+      var rect = row.getBoundingClientRect();
+      var insertAfter = touch.clientY > rect.top + rect.height / 2;
+      reorderSchedule(scheduleDragId, row.getAttribute('data-schedule-id'), insertAfter);
+      cancelScheduleTouch();
+      return;
+    }
+  }
+  cancelScheduleTouch();
+}
+
+function cancelScheduleTouch() {
+  scheduleTouchDragging = false;
+  scheduleDragId = null;
+  document.querySelectorAll('.drag-over,.dragging').forEach(function(node) { node.classList.remove('drag-over', 'dragging'); });
+}
+
+function dragOverSchedule(event) {
+  event.preventDefault();
+  var row = event.target.closest('.timeline-row');
+  if (row) row.classList.add('drag-over');
+}
+
+function dragOverSlot(event) {
+  event.preventDefault();
+}
+
+function dropSchedule(event, targetId) {
+  event.preventDefault();
+  event.stopPropagation();
+  var draggedId = scheduleDragId || (event.dataTransfer ? event.dataTransfer.getData('text/plain') : '');
+  var row = event.target.closest('.timeline-row');
+  var insertAfter = false;
+  if (row) {
+    var rect = row.getBoundingClientRect();
+    insertAfter = event.clientY > rect.top + rect.height / 2;
+  }
+  reorderSchedule(draggedId, targetId, insertAfter);
+}
+
+function clearDragOver(event) {
+  var target = event.currentTarget || event.target;
+  if (target && target.classList) target.classList.remove('drag-over');
+}
+
+function reorderSchedule(draggedId, targetId, insertAfter) {
+  if (!draggedId) return;
+  var dayKey = 'day'+currentDay;
+  var sched = appData.schedule[dayKey] || [];
+  var draggedIndex = -1;
+  for (var index=0; index<sched.length; index++) {
+    if (sched[index].id === draggedId) { draggedIndex = index; break; }
+  }
+  if (draggedIndex < 0) return;
+  var draggedItem = sched.splice(draggedIndex, 1)[0];
+  var insertIndex = sched.length;
+  if (targetId) {
+    for (var targetIndex=0; targetIndex<sched.length; targetIndex++) {
+      if (sched[targetIndex].id === targetId) { insertIndex = targetIndex + (insertAfter ? 1 : 0); break; }
+    }
+  }
+  sched.splice(insertIndex, 0, draggedItem);
+  saveData();
+  render();
+}
+
+// ============ 地图（修改：加外部地图跳转） ============
+function renderMapView() {
+  var h = '<div class="max-w-6xl px-4 py-6 space-y-4" style="max-width:72rem;margin:0 auto;padding:1.5rem 1rem;">';
+  h += '<div class="flex items-center justify-between"><h2 class="text-xl font-bold">🗺️ 地图路线</h2>';
+  h += '<div class="flex gap-2">';
+  var days = appData.trip.days || 1;
+  for (var d=0; d<days; d++) {
+    var day = d+1;
+    var cls = currentDay===day ? 'nav-btn active' : 'nav-btn';
+    var st = currentDay===day ? '' : 'border:1px solid #e5e7eb;background:#fff;';
+    h += '<button onclick="switchDay('+day+');renderMap()" class="'+cls+'" style="'+st+'">第'+day+'天</button>';
+  }
+  h += '</div></div>';
+  h += '<div class="bg-white rounded-xl border border-gray-200 overflow-hidden"><div id="map-container" style="height:400px;"></div></div>';
+  // 外部地图跳转按钮
+  h += '<div class="grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">';
+  h += '<button onclick="openExternalMap(\'google\')" class="btn-outline" style="padding:0.5rem;font-size:0.75rem;">🌐 Google Maps</button>';
+  h += '<button onclick="openExternalMap(\'apple\')" class="btn-outline" style="padding:0.5rem;font-size:0.75rem;">🍎 苹果地图</button>';
+  h += '</div>';
+  h += '<div id="map-route-info" class="bg-white rounded-xl border border-gray-200 p-4"><p class="text-sm text-gray-500 text-center" style="padding:1rem 0;">选择天数查看路线</p></div>';
+  h += '</div>';
+  return h;
+}
+
+function getDayPoints() {
+  var dayKey = 'day'+currentDay;
+  return (appData.schedule[dayKey]||[]).map(function(s){ var col=getCollectionById(s.collectionId); return col ? {customNote:s.customNote,collection:col} : null; }).filter(function(s){ return s && hasValidCoord(s.collection); });
+}
+
+function getAppleMapLocationValue(collection) {
+  return collection.lat + ',' + collection.lng;
+}
+
+function buildAppleDirectionsUrl(points) {
+  if (!points.length) return '';
+  if (points.length === 1) {
+    var single = points[0].collection;
+    return 'https://maps.apple.com/?ll=' + single.lat + ',' + single.lng + '&q=' + encodeURIComponent(getDisplayName(single));
+  }
+  var source = points[0].collection;
+  var destination = points[points.length - 1].collection;
+  var params = [
+    'source=' + encodeURIComponent(getAppleMapLocationValue(source)),
+    'destination=' + encodeURIComponent(getAppleMapLocationValue(destination)),
+    'mode=' + encodeURIComponent('driving')
+  ];
+  points.slice(1, -1).forEach(function(point) {
+    params.push('waypoint=' + encodeURIComponent(getAppleMapLocationValue(point.collection)));
+  });
+  return 'https://maps.apple.com/directions?' + params.join('&');
+}
+
+function openExternalMap(type) {
+  var points = getDayPoints();
+  if (points.length===0) { alert('今天还没有带位置的行程项'); return; }
+  var url = '';
+  if (type==='google') {
+    if (points.length===1) {
+      url = 'https://www.google.com/maps/search/?api=1&query='+points[0].collection.lat+','+points[0].collection.lng;
+    } else {
+      var origin = points[0].collection.lat+','+points[0].collection.lng;
+      var dest = points[points.length-1].collection.lat+','+points[points.length-1].collection.lng;
+      var waypoints = points.slice(1,-1).map(function(p){ return p.collection.lat+','+p.collection.lng; }).join('|');
+      url = 'https://www.google.com/maps/dir/?api=1&origin='+origin+'&destination='+dest+(waypoints ? '&waypoints='+waypoints : '&waypoints=')+'&travelmode=walking';
+    }
+  } else if (type==='apple') {
+    url = buildAppleDirectionsUrl(points);
+  }
+  window.open(url, '_blank');
+}
+
+// 纯 SVG 离线地图
+var leafletMap = null;
+var mapLoadChecked = false;
+
+function renderMap() {
+  var points = getDayPoints();
+  var infoEl = document.getElementById('map-route-info');
+  var container = document.getElementById('map-container');
+
+  // 清理旧地图
+  if (leafletMap) {
+    try { leafletMap.remove(); } catch(e) {}
+    leafletMap = null;
+  }
+
+  if (points.length===0) {
+    if (infoEl) infoEl.innerHTML = '<p class="text-sm text-gray-500 text-center" style="padding:1rem 0;">今天还没有带位置的行程项</p>';
+    if (container) container.innerHTML = '<p class="text-center text-gray-400" style="padding:5rem 0;">暂无地图数据</p>';
+    return;
+  }
+
+  var pts = points.map(function(s){ return Object.assign({}, s.collection, {customNote:s.customNote}); });
+  var colorMap={amber:'#F59E0B',rose:'#EF4444',indigo:'#5848FF',blue:'#3082F6',gray:'#6B7280'};
+
+  // 检查 Leaflet 是否加载完成
+  if (typeof L === 'undefined') {
+    if (container) container.innerHTML = '<div style="padding:2rem;text-align:center;"><p style="color:#9ca3af;">🗺️ 正在加载地图...</p><p style="color:#9ca3af;font-size:0.75rem;margin-top:0.5rem;">如果长时间不显示，请检查网络</p></div>';
+    // 3秒后还加载不了，提示用外部地图
+    setTimeout(function(){
+      if (typeof L === 'undefined' && container && !leafletMap) {
+        var html = '<div style="padding:1.5rem;text-align:center;">';
+        html += '<div style="font-size:2.5rem;margin-bottom:0.5rem;">🗺️</div>';
+        html += '<p style="color:#4b5563;font-weight:600;margin-bottom:0.25rem;">地图库加载失败</p>';
+        html += '<p style="color:#9ca3af;font-size:0.8125rem;margin-bottom:1rem;">可能是网络问题，请使用下方地图按钮</p>';
+        html += '<div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;">';
+        html += '<button onclick="openExternalMap(\'google\')" class="btn-outline" style="padding:0.5rem 0.875rem;font-size:0.8125rem;">🌐 Google</button>';
+        html += '<button onclick="openExternalMap(\'apple\')" class="btn-outline" style="padding:0.5rem 0.875rem;font-size:0.8125rem;">🍎 苹果</button>';
+        html += '</div></div>';
+        container.innerHTML = html;
+      }
+    }, 3000);
+    return;
+  }
+
+  // 计算中心点和缩放范围
+  var lats = pts.map(function(p){return p.lat;});
+  var lngs = pts.map(function(p){return p.lng;});
+  var centerLat = (Math.min.apply(null,lats)+Math.max.apply(null,lats))/2;
+  var centerLng = (Math.min.apply(null,lngs)+Math.max.apply(null,lngs))/2;
+
+  // 初始化地图
+  leafletMap = L.map(container, {
+    zoomControl: true,
+    scrollWheelZoom: true,
+    tap: true
+  }).setView([centerLat, centerLng], 14);
+
+  // 添加 OpenStreetMap 瓦片图层（中文标签）
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap 贡献者',
+    maxZoom: 19,
+    subdomains: 'abc'
+  }).addTo(leafletMap);
+
+  // 添加所有标记
+  var latlngs = [];
+  pts.forEach(function(p, idx) {
+    var latlng = [p.lat, p.lng];
+    latlngs.push(latlng);
+
+    var color = colorMap[getTypeColor(p)] || '#6b7280';
+    var icon = L.divIcon({
+      className: 'trip-marker',
+      html: '<div class="trip-marker-inner" style="background:'+color+';">'+(idx+1)+'</div>',
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
+    });
+
+    var marker = L.marker(latlng, { icon: icon, title: getDisplayName(p) }).addTo(leafletMap);
+
+    // 弹窗内容
+    var popupHtml = '<div style="min-width:160px;">';
+    popupHtml += '<div style="font-weight:700;font-size:14px;color:#111827;margin-bottom:4px;">'+getTypeIcon(p)+' '+escapeHtml(getDisplayName(p))+'</div>';
+    if (p.formatted_address || p.address) popupHtml += '<div style="font-size:12px;color:#6b7280;margin-bottom:4px;">📍 '+escapeHtml(p.formatted_address || p.address)+'</div>';
+    popupHtml += '<div style="font-size:12px;color:#4f46e5;font-weight:600;">第 '+(idx+1)+' 站</div>';
+    if (p.customNote) popupHtml += '<div style="font-size:12px;color:#4b5563;margin-top:6px;padding:4px 8px;background:#f3f4f6;border-radius:4px;">'+escapeHtml(p.customNote)+'</div>';
+    popupHtml += '</div>';
+    marker.bindPopup(popupHtml);
+  });
+
+  // 连接所有点
+  if (pts.length > 1) {
+    L.polyline(latlngs, {
+      color: '#5848FF',
+      weight: 4,
+      opacity: 0.85,
+      dashArray: '8, 6'
+    }).addTo(leafletMap);
+  }
+
+  // 自动缩放到所有点
+  if (pts.length > 1) {
+    leafletMap.fitBounds(L.latLngBounds(latlngs), { padding: [60, 60] });
+  } else if (pts.length === 1) {
+    leafletMap.setView(latlngs[0], 15);
+  }
+
+  // 路线信息面板
+  var totalDist=0;
+  for (var i=0;i<pts.length-1;i++){ totalDist+=calcDistanceRaw(pts[i].lat,pts[i].lng,pts[i+1].lat,pts[i+1].lng); }
+  var routeList='';
+  pts.forEach(function(p,idx){
+    var dh = idx<pts.length-1 ? '<span class="text-xs text-gray-400 flex-shrink-0">→ '+calcDistance(p.lat,p.lng,pts[idx+1].lat,pts[idx+1].lng)+'</span>' : '';
+    var color = colorMap[getTypeColor(p)] || '#6b7280';
+    routeList+='<div class="flex items-center gap-3 py-2" style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;'+(idx<pts.length-1?'border-bottom:1px solid #f3f4f6;':'')+'">';
+    routeList+='<span style="width:1.5rem;height:1.5rem;background:'+color+';color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:bold;flex-shrink:0;">'+(idx+1)+'</span>';
+    routeList+='<span class="text-sm pixel-route-icon">'+escapeHtml(getTypeIcon(p))+'</span>';
+    routeList+='<div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-800 truncate">'+escapeHtml(getDisplayName(p))+'</p><p class="text-xs text-gray-400">第 '+(idx+1)+' 站 '+escapeHtml(p.customNote||'')+'</p></div>';
+    routeList+=dh+'</div>';
+  });
+  if (infoEl) infoEl.innerHTML='<h3 class="font-semibold text-gray-800 mb-3">📍 第'+currentDay+'天路线 · 共'+pts.length+'个站点</h3><div class="flex items-center gap-2 mb-3 text-sm text-gray-500"><span style="padding:0.25rem 0.5rem;background:#eef2ff;color:#4f46e5;border-radius:0.25rem;">总距离约 '+totalDist.toFixed(1)+' km</span><span style="padding:0.25rem 0.5rem;background:#f9fafb;color:#4b5563;border-radius:0.25rem;">直线距离参考</span></div><div class="space-y-2">'+routeList+'</div>';
+
+  // 强制让 Leaflet 重算尺寸（避免在隐藏容器中初始化导致的空白问题）
+  setTimeout(function(){
+    if (!leafletMap) return;
+    try {
+      var mapNode = leafletMap.getContainer();
+      if (mapNode && document.body.contains(mapNode)) leafletMap.invalidateSize();
+      else leafletMap = null;
+    } catch (e) {
+      leafletMap = null;
+    }
+  }, 200);
+}
+
+function getMarkerColor(type) {
+  var colors = { amber:'#F59E0B', rose:'#EF4444', indigo:'#5848FF', blue:'#3082F6', gray:'#6B7280' };
+  return colors[getTypeColor(type)] || '#6b7280';
+}
+
+// ============ 旅行档案 / 导出文件 ============
+function formatTripDateLabel(value) {
+  if (!value) return '未设置日期';
+  try { return new Date(value).toLocaleDateString('zh-CN'); } catch(e) { return value; }
+}
+
+function formatUpdatedAt(value) {
+  if (!value) return '';
+  try { return new Date(value).toLocaleString('zh-CN', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }); } catch(e) { return value; }
+}
+
+function getTripMetaText(data) {
+  data = normalizeTripData(cloneData(data));
+  return (data.trip.days || 1) + ' 天 · ' + data.collections.length + ' 个收藏 · ' + getScheduleCount(data) + ' 个行程';
+}
+
+function renderTripLibraryRecord(record, isActive) {
+  var data = normalizeTripData(cloneData(record.data));
+  var statusBadge = isActive ?
+    '<span style="padding:0.2rem 0.5rem;border-radius:9999px;background:#dcfce7;color:#166534;font-size:0.7rem;font-weight:700;">当前行程</span>' :
+    '<span style="padding:0.2rem 0.5rem;border-radius:9999px;background:#f3f4f6;color:#4b5563;font-size:0.7rem;font-weight:700;">已归档</span>';
+  var activateButton = isActive ? '' : '<button onclick="activateTrip(\'' + escapeJsString(record.id) + '\')" class="btn-primary" style="padding:0.45rem 0.75rem;font-size:0.8rem;">设为当前</button>';
+  var deleteButton = isActive ? '' : '<button onclick="deleteArchivedTrip(\'' + escapeJsString(record.id) + '\')" class="btn-danger" style="padding:0.45rem 0.75rem;font-size:0.8rem;">删除</button>';
+  return '<div class="border border-gray-200 rounded-xl p-4 bg-white" style="display:flex;gap:0.75rem;align-items:flex-start;justify-content:space-between;">' +
+    '<div class="min-w-0">' +
+      '<div class="flex items-center gap-2 mb-1"><h4 class="font-semibold text-gray-900 truncate" style="font-size:0.98rem;">' + escapeHtml(record.title || getTripRecordTitle(data)) + '</h4>' + statusBadge + '</div>' +
+      '<p class="text-xs text-gray-500">' + escapeHtml(formatTripDateLabel(data.trip.startDate)) + ' · ' + escapeHtml(getTripMetaText(data)) + '</p>' +
+      '<p class="text-xs text-gray-400 mt-1">最近保存：' + escapeHtml(formatUpdatedAt(record.updatedAt)) + '</p>' +
+    '</div>' +
+    '<div class="flex gap-2 flex-shrink-0">' +
+      activateButton +
+      '<button onclick="exportTripFile(\'' + escapeJsString(record.id) + '\')" class="btn-secondary" style="padding:0.45rem 0.75rem;font-size:0.8rem;">导出</button>' +
+      deleteButton +
+    '</div>' +
+  '</div>';
+}
+
+function openTripLibraryModal() {
+  syncActiveRecordFromApp('active');
+  saveTripLibrary();
+  saveLocalOnly();
+  var records = getTripRecords();
+  var current = getActiveTripRecord();
+  var currentHtml = current ? renderTripLibraryRecord(current, true) : '<p class="text-sm text-gray-400">还没有当前行程</p>';
+  var archivedHtml = '';
+  records.forEach(function(record) {
+    if (!current || record.id !== current.id) archivedHtml += renderTripLibraryRecord(record, false);
+  });
+  if (!archivedHtml) archivedHtml = '<p class="text-sm text-gray-400" style="padding:0.75rem 0;">还没有已归档行程</p>';
+  showModal(
+    '<h3 class="text-lg font-bold text-gray-900 mb-2" style="display:flex;align-items:center;gap:0.6rem;"><img src="'+pixelIconAsset('library')+'" alt="" style="width:46px;height:46px;object-fit:contain;image-rendering:pixelated;">旅行档案</h3>' +
+    '<p class="text-sm text-gray-500 mb-4">归档保存在当前浏览器里，可随时设为当前继续编辑。导出文件用于备份、换设备或永久保存。</p>' +
+    '<div class="space-y-4">' +
+      '<div><h4 class="font-semibold text-gray-800 mb-2">当前行程</h4>' + currentHtml + '</div>' +
+      '<div><h4 class="font-semibold text-gray-800 mb-2">已归档行程</h4><div class="space-y-2">' + archivedHtml + '</div></div>' +
+    '</div>' +
+    '<input id="trip-archive-input" type="file" accept="application/json,.json" class="hidden" onchange="importTripArchiveFile(this)">' +
+    '<div class="flex gap-2 mt-5 justify-between flex-wrap">' +
+      '<button onclick="document.getElementById(\'trip-archive-input\').click()" class="btn-secondary">导入文件</button>' +
+      '<div class="flex gap-2"><button onclick="startNewTrip()" class="btn-secondary">新建旅程</button><button onclick="closeModal()" class="btn-primary">完成</button></div>' +
+    '</div>'
+  );
+}
+
+function buildTripArchivePayload(record) {
+  return {
+    archiveType: 'TripFlowTripArchive',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    trip: {
+      id: record.id,
+      title: record.title,
+      status: record.status,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+      data: normalizeTripData(cloneData(record.data))
+    }
+  };
+}
+
+function sanitizeFilename(name) {
+  return String(name || 'tripflow').replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, '-').slice(0, 60);
+}
+
+function downloadJsonFile(filename, data) {
+  var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function exportTripFile(id) {
+  syncActiveRecordFromApp('active');
+  var record = getTripRecordById(id);
+  if (!record) return;
+  var date = new Date().toISOString().slice(0, 10);
+  downloadJsonFile(sanitizeFilename(record.title) + '-' + date + '.json', buildTripArchivePayload(record));
+  showSyncToast('已导出完整归档文件');
+}
+
+function exportActiveTripFile() {
+  syncActiveRecordFromApp('active');
+  saveTripLibrary();
+  saveLocalOnly();
+  var active = getActiveTripRecord();
+  if (active) exportTripFile(active.id);
+}
+
+function extractTripDataFromArchive(payload) {
+  if (!payload) return null;
+  if (payload.archiveType === 'TripFlowTripArchive' && payload.trip && payload.trip.data) return payload.trip.data;
+  if (payload.data && payload.data.trip) return payload.data;
+  if (payload.trip && payload.collections && payload.schedule) return payload;
+  return null;
+}
+
+function importTripArchiveFile(input) {
+  var file = input.files && input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function() {
+    try {
+      var payload = JSON.parse(reader.result);
+      var rawData = extractTripDataFromArchive(payload);
+      if (!rawData) throw new Error('invalid archive');
+      var data = normalizeTripData(rawData);
+      if (!confirm('导入后会把这份文件设为当前行程，当前行程会自动进入旅行档案。是否继续？')) return;
+      closeModal();
+      createTripFromData(data, false);
+      showSyncToast('已导入归档文件');
+    } catch(e) {
+      alert('无法识别这个 TripFlow 归档文件，请确认文件是从“导出文件”生成的 JSON。');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ============ 分享功能（URL 编码方案） ============
+// 简单的数据压缩：JSON → encodeURIComponent
+// 对于出行计划数据量（通常 5-20KB），这个方案足够
+function compressData(obj) {
+  return encodeURIComponent(JSON.stringify(obj));
+}
+function decompressData(str) {
+  return JSON.parse(decodeURIComponent(str));
+}
+
+function openShareModal() {
+  // 生成包含完整数据的分享链接
+  var lightData = JSON.parse(JSON.stringify(appData));
+  // 移除图片（太大，不适合编码在URL里）
+  var photoCount = 0;
+  lightData.collections.forEach(function(c) {
+    if (c.photos && c.photos.length) {
+      photoCount += c.photos.length;
+      c.photos = [];
+    }
+  });
+
+  var jsonStr = JSON.stringify(lightData);
+  var compressed = compressData(lightData);
+  var baseUrl = window.location.origin + window.location.pathname;
+  var shareUrl = baseUrl + '#d=' + compressed;
+
+  var photoNote = photoCount > 0 ?
+    '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:0.5rem;padding:0.5rem 0.75rem;margin-top:0.75rem;font-size:0.75rem;color:#92400e;">📸 你有 ' + photoCount + ' 张照片参考图片不会包含在链接中，朋友需要各自在本地导入</div>' : '';
+
+  showModal(
+    '<h3 class="text-lg font-bold text-gray-900 mb-4">🔗 分享行程</h3>' +
+    '<div style="background:#dcfce7;border:1px solid #86efac;border-radius:0.5rem;padding:0.75rem;margin-bottom:1rem;"><p style="font-size:0.875rem;color:#166534;">✅ 分享链接已生成</p><p style="font-size:0.75rem;color:#166534;margin-top:4px;">朋友打开链接就能看到完整行程攻略</p></div>' +
+    '<div><label class="text-sm text-gray-600 mb-1 block">📎 复制这个链接发给朋友</label>' +
+    '<div class="flex gap-2"><input id="share-url" value="' + escapeHtml(shareUrl) + '" class="input" readonly style="flex:1;font-size:0.7rem;"><button onclick="copyShareUrl()" class="btn-primary" style="flex-shrink:0;">复制</button></div>' +
+    '<p class="text-xs text-gray-400 mt-2">链接长度：' + shareUrl.length + ' 字符' + (shareUrl.length > 2000 ? '（较长，但微信可发送）' : '（正常）') + '</p>' +
+    photoNote + '</div>' +
+    '<div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid #e5e7eb;">' +
+    '<p class="text-xs text-gray-500" style="line-height:1.6;">' +
+    '<b>使用方式</b><br>' +
+    '1. 复制链接，通过微信/短信发给朋友<br>' +
+    '2. 朋友在浏览器打开链接，看到你的完整行程<br>' +
+    '3. 朋友可以在他本地修改行程（添加景点、调整时间等）<br>' +
+    '4. 朋友修改后，点他自己的「分享」重新生成链接发给你<br>' +
+    '5. 你打开他的链接后，会作为当前行程查看；原行程会自动进入旅行档案<br><br>' +
+    '✅ <b>链接永久有效</b>，不会过期<br>' +
+    '✅ 不需要网络也能打开（数据在链接里）<br>' +
+    '✅ 不需要注册任何账号<br>' +
+    '⚠️ 分享链接不包含图片；完整备份请使用「导出文件」' +
+    '</p></div>'
+  );
+}
+
+function copyShareUrl() {
+  var input = document.getElementById('share-url');
+  input.select();
+  input.setSelectionRange(0, 99999);
+  try {
+    document.execCommand('copy');
+    showSyncToast('链接已复制');
+  } catch(e) {
+    alert('请手动长按选择复制：\n\n' + input.value);
+  }
+}
+
+// 从 URL hash 加载分享数据
+function loadFromShareLink() {
+  var hash = window.location.hash;
+  if (hash.indexOf('#d=') === 0) {
+    var compressed = hash.substring(3);
+    try {
+      var sharedData = decompressData(compressed);
+      if (sharedData && sharedData.trip) {
+        createTripFromData(sharedData, false);
+        history.replaceState(null, '', window.location.pathname);
+        return true;
+      }
+    } catch(e) { console.log('解析分享链接失败', e); }
+  }
+  return false;
+}
+
+// ============ 模态框：出行信息（修改：移除支付/签证字段） ============
+function editTrip() {
+  var t = appData.trip;
+  showModal('<h3 class="text-lg font-bold text-gray-900 mb-4">✏️ 编辑出行信息</h3>'+
+    '<div class="space-y-3">'+
+    '<div><label class="text-sm text-gray-600 mb-1 block">出行标题</label><input id="trip-title" value="'+escapeHtml(t.title)+'" class="input" placeholder="罗马3日游"></div>'+
+    '<div class="grid grid-cols-2 gap-3" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;"><div><label class="text-sm text-gray-600 mb-1 block">开始日期</label><input id="trip-startDate" type="date" value="'+t.startDate+'" class="input"></div><div><label class="text-sm text-gray-600 mb-1 block">天数</label><input id="trip-days" type="number" min="1" value="'+t.days+'" class="input"></div></div>'+
+    '<div><label class="text-sm text-gray-600 mb-1 block">途经城市</label>'+
+    '<div id="city-inputs" style="display:flex;flex-wrap:wrap;gap:6px;">'+t.cities.map(function(ct,idx){return renderCityInput(idx,ct);}).join('')+'</div>'+
+    '<button onclick="addCityInput()" class="btn-outline" style="margin-top:6px;padding:0.25rem 0.5rem;font-size:0.75rem;">+ 添加城市</button>'+
+    '</div>'+
+    '<div><label class="text-sm text-gray-600 mb-1 block">📝 出行提醒</label><textarea id="trip-notes" rows="8" class="input" style="line-height:1.6;" placeholder="在这里写支付方式、签证、货币、现金提醒等">'+escapeHtml(t.notes)+'</textarea></div>'+
+    '<p class="text-xs text-gray-400">提示：支付方式、签证、货币、现金提醒等都写在这里即可，不用单独管理</p>'+
+    '</div>'+
+    '<div class="flex gap-2 mt-5 justify-end"><button onclick="closeModal()" class="btn-secondary">取消</button><button onclick="saveTrip()" class="btn-primary">保存</button></div>'
+  );
+}
+
+// 城市输入辅助函数
+function renderCityInput(idx, val) {
+  return '<div class="city-input-wrap" style="display:flex;align-items:center;gap:2px;background:#eef2ff;border-radius:0.375rem;padding:2px 4px;">'+
+    '<input type="text" class="city-input-field" value="'+escapeHtml(val||'')+'" placeholder="城市名" style="border:none;background:transparent;font-size:0.75rem;width:80px;outline:none;">'+
+    '<button onclick="removeCityInput(this)" style="color:#9ca3af;font-size:14px;line-height:1;">×</button>'+
+    '</div>';
+}
+function addCityInput() {
+  var container = document.getElementById('city-inputs');
+  var div = document.createElement('div');
+  div.innerHTML = renderCityInput(container.children.length, '');
+  var newNode = div.firstChild;
+  container.appendChild(newNode);
+  newNode.querySelector('input').focus();
+}
+function removeCityInput(btn) {
+  btn.parentNode.remove();
+}
+function collectCities() {
+  var cities = [];
+  var inputs = document.querySelectorAll('.city-input-field');
+  inputs.forEach(function(inp) {
+    var v = inp.value.trim();
+    if (v) cities.push(v);
+  });
+  return cities;
+}
+
+function saveTrip() {
+  appData.trip.title = document.getElementById('trip-title').value;
+  appData.trip.startDate = document.getElementById('trip-startDate').value;
+  appData.trip.days = parseInt(document.getElementById('trip-days').value)||1;
+  appData.trip.cities = collectCities();
+  appData.trip.notes = document.getElementById('trip-notes').value;
+  for (var i=1;i<=appData.trip.days;i++){ if(!appData.schedule['day'+i]) appData.schedule['day'+i]=[]; }
+  saveData(); closeModal(); render();
+}
+
+// ============ 模态框：收藏（修改：photoTip → photos 图片上传） ============
+function openCollectionModal(id) {
+  editingCollectionId = id;
+  var c = id ? getCollectionById(id) : { city:(appData.trip.cities[0]||''), type:'景点', typeEmoji:'🏛️', name:'', displayNameZh:'', formatted_address:'', address:'', lat:'', lng:'', place_id:'', note:'', photos:[], tags:[] };
+  if (!c.photos) c.photos = [];
+  var citySet = {};
+  appData.trip.cities.forEach(function(ct){ citySet[ct]=true; });
+  appData.collections.forEach(function(col){ citySet[col.city]=true; });
+  if (c.city) citySet[c.city]=true;
+  var cityOptions = '<option value="">未选择</option>' + Object.keys(citySet).filter(function(ct){ return !!ct; }).map(function(ct){ return '<option value="'+escapeHtml(ct)+'"'+(c.city===ct?' selected':'')+'>'+escapeHtml(ct)+'</option>'; }).join('');
+
+  var typeBtns = renderTypeButtons(c.type, c.typeEmoji);
+
+  // 已有图片预览
+  var photoPreview = '';
+  if (c.photos.length) {
+    photoPreview = '<div class="photo-grid" id="photo-preview" style="margin-top:8px;">';
+    c.photos.forEach(function(ph, idx) {
+      photoPreview += '<div style="position:relative;"><img class="photo-thumb" src="'+ph+'" onclick="openPhotoViewer(\''+ph+'\')"><button onclick="removePhoto('+idx+')" style="position:absolute;top:-4px;right:-4px;width:20px;height:20px;background:#ef4444;color:#fff;border-radius:50%;font-size:12px;display:flex;align-items:center;justify-content:center;">×</button></div>';
+    });
+    photoPreview += '</div>';
+  } else {
+    photoPreview = '<div class="photo-grid" id="photo-preview" style="margin-top:8px;"></div>';
+  }
+
+  showModal('<h3 class="text-lg font-bold text-gray-900 mb-4">'+(id?'✏️ 编辑收藏':'➕ 添加收藏')+'</h3>'+
+    '<div class="space-y-3">'+
+    '<div class="grid grid-cols-2 gap-3" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;"><div><label class="text-sm text-gray-600 mb-1 block">地点</label><input id="col-name" value="'+escapeHtml(c.name)+'" class="input" placeholder="Colosseum / Eiffel Tower / Starbucks Tokyo" oninput="markPlaceQueryDirty()"></div><div><label class="text-sm text-gray-600 mb-1 block">城市 / 地区</label><select id="col-city" class="input" onchange="markPlaceQueryDirty()">'+cityOptions+'</select></div></div>'+
+    '<div style="border:1px solid #e5e7eb;border-radius:0.75rem;padding:0.75rem;background:#f8fafc;">'+
+    '<div id="location-status" style="padding:0.5rem 0.625rem;border-radius:0.5rem;font-size:0.8125rem;margin-bottom:0.625rem;'+(hasValidCoord(c)?'background:#dcfce7;color:#166534;':'background:#fef3c7;color:#92400e;')+'">'+(hasValidCoord(c)?'✅ 已确认地点，可直接保存':'输入地点后，系统会自动搜索候选地点')+'</div>'+
+    '<input id="col-formatted-address" type="hidden" value="'+escapeHtml(c.formatted_address || c.address || '')+'"><input id="col-place-id" type="hidden" value="'+escapeHtml(c.place_id || '')+'"><input id="col-lat" type="hidden" value="'+(hasValidCoord(c)?parseFloat(c.lat):'')+'"><input id="col-lng" type="hidden" value="'+(hasValidCoord(c)?parseFloat(c.lng):'')+'">'+
+    '<div id="selected-place-summary" style="margin-bottom:0.625rem;"></div>'+
+    '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.625rem;"><button id="locate-btn" onclick="searchPlaceCandidatesFromModal()" class="btn-outline" style="padding:0.5rem 0.75rem;font-size:0.8125rem;">🔎 搜索候选地点</button><button onclick="openPlaceSearchFromModal()" class="btn-outline" style="padding:0.5rem 0.75rem;font-size:0.8125rem;">🌐 在地图里查看</button></div>'+
+    '<div id="place-candidate-list"></div>'+
+    '</div>'+
+    '<div><label class="text-sm text-gray-600 mb-1 block">展示名称</label><input id="col-displayNameZh" value="'+escapeHtml(c.displayNameZh || '')+'" class="input" placeholder="例如：比萨斜塔 / 早餐餐厅 / 东京酒店"><p class="text-xs text-gray-400 mt-1">行程和地图列表将优先显示此名称</p></div>'+
+    '<div><label class="text-sm text-gray-600 mb-1 block">类型</label><div id="type-selector" class="flex gap-2" style="display:flex;gap:0.5rem;flex-wrap:wrap;">'+typeBtns+'<input id="col-type" type="hidden" value="'+escapeHtml(c.type)+'"><input id="col-typeEmoji" type="hidden" value="'+escapeHtml(c.typeEmoji || getTypeIcon(c))+'"></div><button onclick="toggleCustomTypeBuilder()" class="btn-outline" style="margin-top:0.5rem;padding:0.35rem 0.6rem;font-size:0.75rem;">+ 新建标签</button><div id="custom-type-builder" class="hidden" style="margin-top:0.5rem;padding:0.75rem;border-radius:0.75rem;background:#f8fafc;border:1px dashed #d1d5db;"><div class="grid grid-cols-2 gap-2" style="display:grid;grid-template-columns:90px 1fr;gap:0.5rem;"><input id="new-type-emoji" class="input" value="🏷️" placeholder="emoji"><input id="new-type-name" class="input" placeholder="例如：咖啡 / 购物 / 展览"></div><button onclick="createCustomTypeFromModal()" class="btn-primary" style="margin-top:0.5rem;padding:0.45rem 0.85rem;font-size:0.8125rem;">创建并使用</button></div></div>'+
+    '<div><label class="text-sm text-gray-600 mb-1 block">备注</label><textarea id="col-note" rows="2" class="input" placeholder="建议早上8:30第一批入场">'+escapeHtml(c.note)+'</textarea></div>'+
+    '<div><label class="text-sm text-gray-600 mb-1 block">📸 照片参考（导入照片）</label>'+
+    '<input type="file" id="col-photos" accept="image/*" multiple style="display:none;" onchange="handlePhotoUpload(event)">'+
+    '<button onclick="document.getElementById(\'col-photos\').click()" class="btn-outline" style="width:100%;padding:0.75rem;">+ 导入照片（可多选）</button>'+
+    '<p class="text-xs text-gray-400">保存你参考过的照片，到了现场就知道怎么拍</p>'+
+    photoPreview+
+    '</div>'+
+    '<div><label class="text-sm text-gray-600 mb-1 block">附加关键词</label>'+
+    '<div id="tag-inputs" style="display:flex;flex-wrap:wrap;gap:6px;">'+(c.tags||[]).map(function(tg,idx){return renderTagInput(idx, tg);}).join('')+'</div>'+
+    '<button onclick="addTagInput()" class="btn-outline" style="margin-top:6px;padding:0.25rem 0.5rem;font-size:0.75rem;">+ 添加关键词</button>'+
+    '</div>'+
+    '</div>'+
+    '<div class="flex gap-2 mt-5 justify-end"><button onclick="closeModal()" class="btn-secondary">取消</button><button onclick="saveCollection()" class="btn-primary">保存</button></div>'
+  );
+
+  // 临时存储当前编辑的 photos
+  window._editingPhotos = c.photos.slice();
+  window._placeCandidates = [];
+  renderSelectedPlaceSummary(hasValidCoord(c) ? {
+    formatted_address: c.formatted_address || c.address || '',
+    latitude: c.lat,
+    longitude: c.lng,
+    place_id: c.place_id || ''
+  } : null);
+  renderPlaceCandidates([]);
+  if (!hasValidCoord(c) && c.name) {
+    setTimeout(function() { searchPlaceCandidatesFromModal({ silent: true }); }, 100);
+  }
+}
+
+// 标签输入辅助函数
+function renderTagInput(idx, val) {
+  return '<div class="tag-input-wrap" style="display:flex;align-items:center;gap:2px;background:#eef2ff;border-radius:0.375rem;padding:2px 4px;">'+
+    '<input type="text" class="tag-input-field" value="'+escapeHtml(val||'')+'" placeholder="标签" style="border:none;background:transparent;font-size:0.75rem;width:72px;outline:none;">'+
+    '<button onclick="removeTagInput(this)" style="color:#9ca3af;font-size:14px;line-height:1;">×</button>'+
+    '</div>';
+}
+function addTagInput() {
+  var container = document.getElementById('tag-inputs');
+  var div = document.createElement('div');
+  div.innerHTML = renderTagInput(container.children.length, '');
+  var newNode = div.firstChild;
+  container.appendChild(newNode);
+  newNode.querySelector('input').focus();
+}
+function removeTagInput(btn) {
+  btn.parentNode.remove();
+}
+function collectTags() {
+  var tags = [];
+  var inputs = document.querySelectorAll('.tag-input-field');
+  inputs.forEach(function(inp) {
+    var v = inp.value.trim();
+    if (v) tags.push(v);
+  });
+  return tags;
+}
+
+function handlePhotoUpload(event) {
+  var files = event.target.files;
+  for (var i=0; i<files.length; i++) {
+    (function(file) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        // 压缩图片到合理大小
+        compressImage(e.target.result, 800, 0.7, function(compressed) {
+          window._editingPhotos.push(compressed);
+          renderPhotoPreview();
+        });
+      };
+      reader.readAsDataURL(file);
+    })(files[i]);
+  }
+  event.target.value = ''; // 允许重复选择同一文件
+}
+
+function compressImage(dataUrl, maxSize, quality, callback) {
+  var img = new Image();
+  img.onload = function() {
+    var canvas = document.createElement('canvas');
+    var w = img.width, h = img.height;
+    if (w > h) { if (w > maxSize) { h = h * maxSize / w; w = maxSize; } }
+    else { if (h > maxSize) { w = w * maxSize / h; h = maxSize; } }
+    canvas.width = w; canvas.height = h;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', quality));
+  };
+  img.src = dataUrl;
+}
+
+function renderPhotoPreview() {
+  var container = document.getElementById('photo-preview');
+  if (!container) return;
+  var html = '';
+  window._editingPhotos.forEach(function(ph, idx) {
+    html += '<div style="position:relative;"><img class="photo-thumb" src="'+ph+'" onclick="openPhotoViewer(\''+ph+'\')"><button onclick="removePhoto('+idx+')" style="position:absolute;top:-4px;right:-4px;width:20px;height:20px;background:#ef4444;color:#fff;border-radius:50%;font-size:12px;display:flex;align-items:center;justify-content:center;border:none;">×</button></div>';
+  });
+  container.innerHTML = html;
+}
+
+function removePhoto(idx) {
+  window._editingPhotos.splice(idx, 1);
+  renderPhotoPreview();
+}
+
+function selectType(btn, type, emoji) {
+  document.getElementById('col-type').value = type;
+  var emojiInput = document.getElementById('col-typeEmoji');
+  if (emojiInput) emojiInput.value = emoji || getTypeIcon(type);
+  var allBtns = document.querySelectorAll('.type-btn');
+  for (var i=0; i<allBtns.length; i++) {
+    allBtns[i].style.background = '#fff';
+    allBtns[i].style.color = '#4b5563';
+    allBtns[i].style.borderColor = '#d1d5db';
+  }
+  if (btn) {
+    btn.style.background = '#4f46e5';
+    btn.style.color = '#fff';
+    btn.style.borderColor = '#4f46e5';
+  } else {
+    var buttons = document.querySelectorAll('.type-btn');
+    for (var index=0; index<buttons.length; index++) {
+      if (buttons[index].textContent.indexOf(type) >= 0) {
+        buttons[index].style.background = '#4f46e5';
+        buttons[index].style.color = '#fff';
+        buttons[index].style.borderColor = '#4f46e5';
+        break;
+      }
+    }
+  }
+}
+
+async function saveCollection() {
+  var name = document.getElementById('col-name').value.trim();
+  if (!name) { alert('请输入地图检索名称'); return; }
+  var selectedPlace = getSelectedPlaceFromModal();
+  if (!selectedPlace) {
+    var candidates = await searchPlaceCandidatesFromModal({ silent: true });
+    if (candidates && candidates.length) {
+      alert('我已经帮你找到了候选地点，请先点选正确地点，再保存。');
+      return;
+    }
+    if (!confirm('没有找到可确认的地图地点。现在保存的话，这条收藏暂时不能参与路线规划。要继续保存吗？')) return;
+  }
+  var data = {
+    city: document.getElementById('col-city').value.trim() || '未分类',
+    type: document.getElementById('col-type').value,
+    typeEmoji: document.getElementById('col-typeEmoji').value || getTypeIcon(document.getElementById('col-type').value),
+    name: name,
+    displayNameZh: document.getElementById('col-displayNameZh').value.trim(),
+    address: selectedPlace ? selectedPlace.formatted_address : '',
+    formatted_address: selectedPlace ? selectedPlace.formatted_address : '',
+    lat: selectedPlace ? selectedPlace.latitude : null,
+    lng: selectedPlace ? selectedPlace.longitude : null,
+    place_id: selectedPlace ? selectedPlace.place_id : '',
+    note: document.getElementById('col-note').value.trim(),
+    photos: window._editingPhotos || [],
+    tags: collectTags()
+  };
+  if (editingCollectionId) {
+    for (var i=0; i<appData.collections.length; i++) {
+      if (appData.collections[i].id===editingCollectionId) {
+        appData.collections[i] = Object.assign({}, appData.collections[i], data);
+        break;
+      }
+    }
+  } else {
+    data.id = uid();
+    appData.collections.push(data);
+  }
+  saveData(); closeModal(); render();
+  if (!hasValidCoord(data)) {
+    alert('这个地点已经保存，但还没有确认地图地点。\n\n如果你想让它参与路线规划，请编辑这条收藏，重新搜索候选地点并确认。');
+  }
+}
+
+function deleteCollection(id) {
+  if (!confirm('确定删除这个收藏吗？关联的行程也会移除。')) return;
+  appData.collections = appData.collections.filter(function(c){return c.id!==id;});
+  Object.keys(appData.schedule).forEach(function(dk){ appData.schedule[dk] = appData.schedule[dk].filter(function(s){return s.collectionId!==id;}); });
+  saveData(); render();
+}
+
+// ============ 模态框：行程（纯顺序模式） ============
+function openScheduleModal(id) {
+  editingScheduleId = id;
+  var dayKey = 'day'+currentDay;
+  var item = id ? (appData.schedule[dayKey]||[]).find(function(s){return s.id===id;}) : {collectionId:'',customNote:''};
+  if (!item) item = {collectionId:'',customNote:''};
+  var options = '<option value="">-- 请选择 --</option>';
+  appData.collections.forEach(function(c){
+    options += '<option value="'+c.id+'"'+(item.collectionId===c.id?' selected':'')+'>'+getTypeIcon(c.type)+' '+escapeHtml(getDisplayName(c))+' ('+escapeHtml(c.city)+')</option>';
+  });
+
+  showModal('<h3 class="text-lg font-bold text-gray-900 mb-4">'+(id?'✏️ 编辑行程':'➕ 添加行程')+' · 第'+currentDay+'天</h3>'+
+    '<div class="space-y-3">'+
+    '<div><label class="text-sm text-gray-600 mb-1 block">选择收藏</label><select id="sch-collectionId" class="input">'+options+'</select></div>'+
+    '<div><label class="text-sm text-gray-600 mb-1 block">备注（可选）</label><input id="sch-customNote" value="'+escapeHtml(item.customNote||'')+'" class="input" placeholder="步行10分钟 / 这家先预约 / 看完日落再去"></div>'+
+    '</div>'+
+    '<div class="flex gap-2 mt-5 justify-end"><button onclick="closeModal()" class="btn-secondary">取消</button><button onclick="saveSchedule()" class="btn-primary">保存</button></div>'
+  );
+}
+
+function saveSchedule() {
+  var collectionId = document.getElementById('sch-collectionId').value;
+  var customNote = document.getElementById('sch-customNote').value.trim();
+  if (!collectionId) { alert('请选择一个收藏项'); return; }
+  var dayKey = 'day'+currentDay;
+  if (!appData.schedule[dayKey]) appData.schedule[dayKey] = [];
+  if (editingScheduleId) {
+    for (var i=0; i<appData.schedule[dayKey].length; i++) {
+      if (appData.schedule[dayKey][i].id===editingScheduleId) {
+        delete appData.schedule[dayKey][i].slot;
+        delete appData.schedule[dayKey][i].time;
+        delete appData.schedule[dayKey][i].timeHint;
+        appData.schedule[dayKey][i].collectionId = collectionId;
+        appData.schedule[dayKey][i].customNote = customNote;
+        break;
+      }
+    }
+  } else {
+    appData.schedule[dayKey].push({id:uid(),collectionId:collectionId,customNote:customNote});
+  }
+  saveData(); closeModal(); render();
+}
+
+function deleteSchedule(id) {
+  var dayKey = 'day'+currentDay;
+  appData.schedule[dayKey] = appData.schedule[dayKey].filter(function(s){return s.id!==id;});
+  saveData(); render();
+}
+
+// ============ 智能路线规划（最近邻算法） ============
+function optimizeRoute() {
+  var dayKey = 'day'+currentDay;
+  var items = appData.schedule[dayKey] || [];
+  if (items.length < 2) { alert('至少需要2个行程项才能优化'); return; }
+
+  // 检查有多少项有坐标
+  var withCoord = [];
+  var withoutCoord = [];
+  var missingNames = [];
+  items.forEach(function(it) {
+    var col = getCollectionById(it.collectionId);
+    if (hasValidCoord(col)) withCoord.push(it);
+    else {
+      withoutCoord.push(it);
+      if (col) missingNames.push(getDisplayName(col));
+    }
+  });
+
+  if (withCoord.length < 2) {
+    alert('至少需要 2 个已确认地图地点的行程项才能优化路线。\n\n当前还缺位置的条目：\n' + (missingNames.length ? missingNames.join('\n') : '未识别地点') + '\n\n请编辑这些收藏，重新搜索候选地点并确认。');
+    return;
+  }
+
+  // 最近邻算法：以第一个点为起点，每次找最近的未访问点
+  var route = [withCoord[0]];
+  var remaining = withCoord.slice(1);
+  var totalDist = 0;
+
+  while (remaining.length > 0) {
+    var last = route[route.length-1];
+    var lastCol = getCollectionById(last.collectionId);
+    var nearestIdx = 0;
+    var nearestDist = Infinity;
+
+    for (var i=0; i<remaining.length; i++) {
+      var col = getCollectionById(remaining[i].collectionId);
+      var d = calcDistanceRaw(lastCol.lat, lastCol.lng, col.lat, col.lng);
+      if (d < nearestDist) {
+        nearestDist = d;
+        nearestIdx = i;
+      }
+    }
+
+    totalDist += nearestDist;
+    route.push(remaining[nearestIdx]);
+    remaining.splice(nearestIdx, 1);
+  }
+
+  route.forEach(function(item) {
+    delete item.slot;
+    delete item.time;
+    delete item.timeHint;
+  });
+
+  // 没有坐标的行程项放到最后
+  var newOrder = route.concat(withoutCoord);
+  appData.schedule[dayKey] = newOrder;
+
+  saveData();
+  render();
+  showSyncToast('已按最优路线排序，总距离约 ' + totalDist.toFixed(1) + ' km');
+}
+
+// ============ 模态框 ============
+function showModal(html) {
+  var overlay = document.getElementById('modal-overlay');
+  if (!overlay) return;
+  if (modalCloseTimer) clearTimeout(modalCloseTimer);
+  document.getElementById('modal-content').innerHTML = html;
+  overlay.classList.remove('hidden');
+  requestAnimationFrame(function() { overlay.classList.add('is-visible'); });
+}
+function closeModal() {
+  var overlay = document.getElementById('modal-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('is-visible');
+  modalCloseTimer = setTimeout(function() {
+    overlay.classList.add('hidden');
+  }, 240);
+  editingCollectionId = null;
+  editingScheduleId = null;
+  window._editingPhotos = null;
+}
+
+function switchView(view) { currentView = view; render(); if (view==='map') setTimeout(renderMap, 100); }
+function switchDay(day) { currentDay = day; render(); if (currentView==='map') setTimeout(renderMap, 100); }
+
+function setupMotion() {
+  var app = document.getElementById('app');
+  if (!app) return;
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var viewRoot = app.querySelector('.nav-bar ~ .max-w-6xl, .nav-bar ~ .max-w-4xl');
+  var revealNodes = [];
+
+  if (viewRoot) {
+    viewRoot.classList.add('view-content');
+    Array.prototype.forEach.call(viewRoot.children, function(node) {
+      if (revealNodes.indexOf(node) === -1) revealNodes.push(node);
+    });
+  }
+  Array.prototype.forEach.call(app.querySelectorAll('.reveal-on-scroll'), function(node) {
+    if (revealNodes.indexOf(node) === -1) revealNodes.push(node);
+  });
+  Array.prototype.forEach.call(app.querySelectorAll('.mod-card, .timeline-row, #map-container, #map-route-info'), function(node) {
+    if (revealNodes.indexOf(node) === -1) revealNodes.push(node);
+  });
+
+  if (reduceMotion || !('IntersectionObserver' in window)) {
+    revealNodes.forEach(function(node) { node.classList.add('is-visible'); });
+    return;
+  }
+
+  var observer = new IntersectionObserver(function(entries, currentObserver) {
+    entries.forEach(function(entry) {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-visible');
+      currentObserver.unobserve(entry.target);
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+
+  revealNodes.forEach(function(node, index) {
+    node.style.setProperty('--reveal-delay', Math.min(index * 45, 180) + 'ms');
+    node.classList.add('reveal-on-scroll');
+    observer.observe(node);
+  });
+}
+
+function render() {
+  var app = document.getElementById('app');
+  if (currentView === 'landing') {
+    app.innerHTML = renderLanding();
+    requestAnimationFrame(setupMotion);
+    return;
+  }
+  if (currentView === 'overview') {
+    app.innerHTML = '<div class="overview-shell">' + renderNav() + renderOverview() + '</div>';
+    requestAnimationFrame(setupMotion);
+    return;
+  }
+  var content = renderNav();
+  if (currentView==='collections') content += renderCollections();
+  else if (currentView==='timeline') content += renderTimeline();
+  else if (currentView==='map') content += renderMapView();
+  app.innerHTML = content;
+  requestAnimationFrame(setupMotion);
+}
+
+/* ============ Pixel design render layer ============ */
+function pixelIconAsset(name) {
+  var assets = {
+    home:'icon-home.png', profile:'icon-folder-star.png', overview:'icon-folder-star.png', collections:'icon-star.png',
+    timeline:'icon-calendar.png', map:'icon-map.png', share:'icon-share.png',
+    library:'icon-folder.png', export:'icon-folder-upload.png', reset:'icon-refresh.png',
+    clear:'icon-trash.png', days:'icon-calendar.png', favorites:'icon-star.png',
+    schedule:'icon-clipboard.png', cities:'icon-map.png'
+  };
+  return 'assets/design/' + (assets[name] || assets.overview);
+}
+
+function pixelMascotAsset(view) {
+  var mascots = {
+    overview:'mascot-think-trim.png',
+    collections:'mascot-explore-trim.png',
+    timeline:'mascot-plan-trim.png',
+    map:'mascot-happy-trim.png',
+    share:'mascot-rest-trim.png'
+  };
+  return 'assets/design/' + (mascots[view] || mascots.overview);
+}
+
+function pixelTypeAsset(c) {
+  var type = String(c && c.type || '');
+  if (type.indexOf('餐') >= 0 || type.indexOf('吃') >= 0) return 'assets/design/icon-flower-small.png';
+  if (type.indexOf('住') >= 0 || type.indexOf('酒店') >= 0) return 'assets/design/icon-home.png';
+  if (type.indexOf('景') >= 0 || type.indexOf('博物') >= 0) return 'assets/design/icon-flower-star.png';
+  if (type.indexOf('交通') >= 0) return 'assets/design/icon-map.png';
+  return 'assets/design/icon-flower.png';
+}
+
+function renderNav() {
+  var items = [
+    {key:'landing', label:'首页', icon:pixelIconAsset('home')},
+    {key:'overview', label:'个人中心', icon:pixelIconAsset('profile')},
+    {key:'collections', label:'收藏', icon:pixelIconAsset('collections')},
+    {key:'timeline', label:'行程', icon:pixelIconAsset('timeline')},
+    {key:'map', label:'地图', icon:pixelIconAsset('map')},
+    {key:'share', label:'分享', icon:pixelIconAsset('share')}
+  ];
+  var h = '<header class="pixel-topbar"><button class="pixel-brand" onclick="switchView(\'overview\')"><img src="assets/design/logo.png" alt=""><span><strong>旅记 <span>TripFlow</span></strong></span></button><nav class="pixel-topnav">';
+  items.forEach(function(it) {
+    var active = currentView === it.key;
+    var action = it.key === 'share' ? 'openShareModal()' : 'switchView(\''+it.key+'\')';
+    h += '<button onclick="'+action+'" class="pixel-nav-item'+(active?' active':'')+'"><img class="pixel-nav-icon" src="'+it.icon+'" alt="">'+it.label+'</button>';
+  });
+  h += '</nav><div class="pixel-top-actions"><button class="pixel-avatar" onclick="openTripLibraryModal()"><img src="assets/design/mascot-explore.png" alt="旅行者"></button><button class="pixel-settings" onclick="editTrip()">⚙</button></div></header>';
+  h += '<aside class="pixel-sidebar"><div class="pixel-sidebar-product"><strong>TripFlow</strong></div><div class="pixel-product-divider"></div><nav class="pixel-side-links">';
+  items.forEach(function(it) {
+    var sideAction = it.key === 'share' ? 'openShareModal()' : 'switchView(\''+it.key+'\')';
+    h += '<button onclick="'+sideAction+'" class="pixel-side-link'+(currentView===it.key?' active':'')+'"><img src="'+it.icon+'" alt="">'+it.label+'</button>';
+  });
+  h += '</nav><div class="pixel-side-divider"></div><div class="pixel-sidebar-mascot"><img src="'+pixelMascotAsset(currentView)+'" alt="旅行小伙伴"></div></aside>';
+  return h;
+}
+
+function renderOverview() {
+  var t = appData.trip, byCity = {}, totalSched = getScheduleCount(appData);
+  appData.collections.forEach(function(c){ (byCity[c.city] || (byCity[c.city] = [])).push(c); });
+  var startStr = t.startDate ? new Date(t.startDate).toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'}) : '未设置';
+  var end = t.startDate ? new Date(new Date(t.startDate).getTime()+(t.days-1)*86400000).toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'}) : '';
+  var cityTags = (t.cities || []).map(function(c){ return '<span class="pixel-city-tag">★ '+escapeHtml(c)+'</span>'; }).join('');
+  var h = '<main class="pixel-main-content pixel-overview-content"><section class="pixel-overview-hero"><div class="pixel-overview-copy"><div class="pixel-kicker">★ 当前行程</div><h1>'+escapeHtml(t.title || (t.days+'日游'))+'</h1><p class="pixel-overview-date">'+escapeHtml(startStr)+(end?' → '+escapeHtml(end):'')+' · '+t.days+'天</p><div class="pixel-city-tags">'+cityTags+'</div></div><button class="pixel-button small pixel-hero-edit" onclick="editTrip()">编辑行程</button></section><div class="pixel-dashboard"><section class="pixel-stat-grid"><div class="pixel-stat"><div class="pixel-stat-icon"><img src="'+pixelIconAsset('days')+'" alt=""></div><div><div class="pixel-stat-value">'+t.days+'</div><div class="pixel-stat-label">出行天数</div></div></div><div class="pixel-stat"><div class="pixel-stat-icon"><img src="'+pixelIconAsset('favorites')+'" alt=""></div><div><div class="pixel-stat-value">'+appData.collections.length+'</div><div class="pixel-stat-label">收藏数量</div></div></div><div class="pixel-stat"><div class="pixel-stat-icon"><img src="'+pixelIconAsset('schedule')+'" alt=""></div><div><div class="pixel-stat-value">'+totalSched+'</div><div class="pixel-stat-label">行程安排</div></div></div><div class="pixel-stat"><div class="pixel-stat-icon"><img src="'+pixelIconAsset('cities')+'" alt=""></div><div><div class="pixel-stat-value">'+Object.keys(byCity).length+'</div><div class="pixel-stat-label">途经城市</div></div></div></section>';
+  var cityHtml = '';
+  Object.keys(byCity).forEach(function(city, cityIndex) {
+    var items = byCity[city], byType = {};
+    items.forEach(function(c){ byType[c.type] = (byType[c.type] || 0) + 1; });
+    var badges = Object.keys(byType).map(function(tp){ return '<span class="pixel-badge">'+escapeHtml(getTypeIcon(tp))+' '+byType[tp]+'</span>'; }).join('');
+    cityHtml += '<button class="pixel-city-row" onclick="switchView(\'collections\')"><span class="pixel-city-avatar">'+(cityIndex+1)+'</span><span class="pixel-city-name">'+escapeHtml(city)+'</span><span class="pixel-city-badges">'+badges+'<span class="pixel-badge total">共'+items.length+'项　›</span></span></button>';
+  });
+  if (!cityHtml) cityHtml = '<div style="padding:24px;color:#77749a;font-weight:800;text-align:center;">还没有收藏任何内容，去发现心仪的地点吧。</div>';
+  h += '<section class="pixel-overview-section"><div class="pixel-section-title"><h2><img class="pixel-section-icon" src="'+pixelIconAsset('favorites')+'" alt="">收藏概览</h2><button class="pixel-button secondary small" onclick="switchView(\'collections\')">查看全部　›</button></div>'+cityHtml+'</section>';
+  if (t.notes) h += '<section class="pixel-note"><strong>📝 出行提醒</strong><p style="margin-top:6px;line-height:1.7;">'+nl2br(t.notes)+'</p></section>';
+  h += '<section class="pixel-dashboard-actions"><button class="pixel-dashboard-action" onclick="openTripLibraryModal()"><img class="pixel-action-icon" src="'+pixelIconAsset('library')+'" alt="">旅行档案</button><button class="pixel-dashboard-action" onclick="exportActiveTripFile()"><img class="pixel-action-icon" src="'+pixelIconAsset('export')+'" alt="">导出文件</button><button class="pixel-dashboard-action" onclick="resetData()"><img class="pixel-action-icon" src="'+pixelIconAsset('reset')+'" alt="">恢复示例数据</button><button class="pixel-dashboard-action danger" onclick="clearData()"><img class="pixel-action-icon" src="'+pixelIconAsset('clear')+'" alt="">清空当前行程</button></section></div></main>';
+  return h;
+}
+
+function renderCollectionCard(c) {
+  var type = getTypeColor(c), tags = (c.tags || []).map(function(t){ return '<span class="pixel-card-tag">'+escapeHtml(t)+'</span>'; }).join('');
+  var photos = (c.photos || []).slice(0,3).map(function(ph){ return '<img src="'+ph+'" onclick="openPhotoViewer(\''+ph+'\')">'; }).join('');
+  var h = '<article class="pixel-collection-card type-'+type+(c.done?' is-done':'')+'"><div class="pixel-card-top"><span class="pixel-place-emoji" aria-label="地点类型">'+escapeHtml(getTypeIcon(c))+'</span><div class="pixel-card-actions"><button class="pixel-icon-button" onclick="toggleDone(\''+c.id+'\')">'+(c.done?'✅':'⭐')+'</button><button class="pixel-icon-button" onclick="openCollectionModal(\''+c.id+'\')">✎</button><button class="pixel-icon-button" onclick="deleteCollection(\''+c.id+'\')">×</button></div></div><h3 class="pixel-card-title">'+escapeHtml(getDisplayName(c))+'</h3><p class="pixel-card-address">📍 '+escapeHtml(c.formatted_address || c.address || '未确认地点')+'</p>';
+  if (c.note) h += '<p class="pixel-card-note">📝 '+escapeHtml(c.note)+'</p>';
+  if (photos) h += '<div class="pixel-card-photo">'+photos+'</div>';
+  h += '<div class="pixel-card-tags">'+tags+'</div></article>';
+  return h;
+}
+
+function renderCollections() {
+  var byCity = {};
+  appData.collections.forEach(function(c){ (byCity[c.city] || (byCity[c.city] = [])).push(c); });
+  var h = '<main class="pixel-main-content"><div class="pixel-page"><div class="pixel-page-header"><div><h1><img class="pixel-heading-icon" src="'+pixelIconAsset('collections')+'" alt="">我的收藏</h1><p>把想去的地点整理成一张张旅行卡片。</p></div><button onclick="openCollectionModal()" class="pixel-button">＋ 添加收藏</button></div>';
+  if (!appData.collections.length) {
+    h += '<div class="pixel-empty"><img class="pixel-empty-image" src="assets/design/empty-favorite.png" alt=""><h2>还没有收藏任何地点</h2><p>去发现心仪的地点吧！</p><button onclick="openCollectionModal()" class="pixel-button">＋ 添加收藏</button></div>';
+  } else {
+    Object.keys(byCity).forEach(function(city) {
+      var items = byCity[city], collapsed = collapsedCities[city], doneCount = items.filter(function(c){ return c.done; }).length;
+      h += '<section class="pixel-collection-city"><button onclick="toggleCity(\''+escapeJsString(city)+'\')" class="pixel-collection-city-header"><span style="font-size:31px;">'+(city === '比萨' ? '🏛️' : '🏰')+'</span><h2>'+escapeHtml(city)+'</h2><span class="city-count">'+doneCount+'/'+items.length+'</span><span style="font-size:25px;">'+(collapsed?'⌄':'⌃')+'</span></button>';
+      if (!collapsed) h += '<div class="pixel-card-grid '+(items.length <= 4 ? 'pixel-card-grid-2' : 'pixel-card-grid-3')+'">'+items.map(renderCollectionCard).join('')+'</div>';
+      h += '</section>';
+    });
+  }
+  return h + '</div></main>';
+}
+
+function renderTimelineItem(item, idx, all) {
+  var c = item.collection, next = all[idx+1] ? getCollectionById(all[idx+1].collectionId) : null;
+  var distance = next && hasValidCoord(c) && hasValidCoord(next) ? '→ 距离下一站 '+calcDistance(c.lat,c.lng,next.lat,next.lng) : '→ 距离下一站 —';
+  var h = '<div class="pixel-timeline-row" data-schedule-id="'+item.id+'" ondragover="dragOverSchedule(event)" ondragleave="clearDragOver(event)" ondrop="dropSchedule(event,\''+item.id+'\')"><div class="pixel-order">'+item.order+'</div><div class="pixel-timeline-place"><span class="pixel-place-emoji" aria-label="地点类型">'+escapeHtml(getTypeIcon(c))+'</span><div><strong>'+escapeHtml(getDisplayName(c))+'</strong><span>'+escapeHtml(distance)+'</span></div></div><div class="pixel-timeline-actions"><button class="drag-handle" draggable="true" ondragstart="startScheduleDrag(event,\''+item.id+'\')" ondragend="endScheduleDrag(event)" ontouchstart="startScheduleTouch(event,\''+item.id+'\')" ontouchmove="moveScheduleTouch(event)" ontouchend="endScheduleTouch(event)">⠿</button><button onclick="moveSchedule(\''+item.id+'\',-1)">↑</button><button onclick="moveSchedule(\''+item.id+'\',1)">↓</button><button onclick="openScheduleModal(\''+item.id+'\')">✎</button><button onclick="deleteSchedule(\''+item.id+'\')" style="color:#d63e44;">×</button></div></div>';
+  return h;
+}
+
+function renderTimeline() {
+  var days = appData.trip.days || 1, tripDate = appData.trip.startDate ? new Date(appData.trip.startDate) : null, sched = appData.schedule['day'+currentDay] || [];
+  var h = '<main class="pixel-main-content"><div class="pixel-page"><div class="pixel-page-header"><div><h1><img class="pixel-heading-icon" src="'+pixelIconAsset('timeline')+'" alt="">行程安排</h1><p>拖动或上下移动即可调整当天路线。</p></div><div style="display:flex;gap:10px;"><button onclick="optimizeRoute()" class="pixel-button secondary"><img class="pixel-sort-icon" src="assets/design/icon-folder.png" alt="">智能排序</button><button onclick="openScheduleModal()" class="pixel-button">＋ 添加行程</button></div></div><div class="pixel-tabs">';
+  for (var d=0; d<days; d++) { var dt = tripDate ? new Date(tripDate.getTime()+d*86400000) : null; var label = dt ? (dt.getMonth()+1)+'月'+dt.getDate()+'日' : '第'+(d+1)+'天'; h += '<button onclick="switchDay('+(d+1)+')" class="pixel-tab'+(currentDay===d+1?' active':'')+'">'+label+'</button>'; }
+  h += '</div><section class="pixel-timeline-panel"><div class="pixel-day-head"><span>第 '+currentDay+' 天</span><span>'+sched.length+' 项</span></div>';
+  if (!sched.length) h += '<div class="pixel-empty" style="border:0;box-shadow:none;"><img class="pixel-empty-image" src="assets/design/empty-trip.png" alt=""><h2>暂无安排</h2><p>创建你的第一个旅行计划吧！</p><button onclick="openScheduleModal()" class="pixel-button">＋ 创建行程</button></div>';
+  else h += '<div class="pixel-timeline-list">'+sched.map(function(it,idx){ var c=getCollectionById(it.collectionId); return c ? renderTimelineItem({id:it.id,order:idx+1,customNote:it.customNote,collection:c},idx,sched) : ''; }).join('')+'</div>';
+  return h + '</section></div></main>';
+}
+
+function renderMapView() {
+  var days = appData.trip.days || 1, h = '<main class="pixel-main-content"><div class="pixel-page"><div class="pixel-page-header"><div><h1><img class="pixel-heading-icon" src="'+pixelIconAsset('map')+'" alt="">地图路线</h1><p>按当天行程查看路线、站点与距离。</p></div><button onclick="openShareModal()" class="pixel-button secondary"><img class="pixel-button-icon" src="'+pixelIconAsset('share')+'" alt="">分享行程</button></div><div class="pixel-tabs">';
+  for (var d=0; d<days; d++) h += '<button onclick="switchDay('+(d+1)+');renderMap()" class="pixel-tab'+(currentDay===d+1?' active':'')+'">第'+(d+1)+'天</button>';
+  h += '</div><div class="pixel-map-shell"><div class="pixel-map-frame"><div id="map-container"></div></div><aside class="pixel-route-list"><h2>📍 第'+currentDay+'天路线</h2><div id="map-route-info"><p style="color:#767394;font-weight:700;">正在加载路线…</p></div></aside></div><div style="display:flex;gap:10px;margin-top:14px;"><button onclick="openExternalMap(\'google\')" class="pixel-button secondary small">🌐 Google Maps</button><button onclick="openExternalMap(\'apple\')" class="pixel-button secondary small">🍎 苹果地图</button></div></div></main>';
+  return h;
+}
+
+function removeGreenBackground(img) {
+  if (!img || img.dataset.chromaReady) return;
+  img.dataset.chromaReady = '1';
+  var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+  function process() {
+    canvas.width = img.naturalWidth || img.width; canvas.height = img.naturalHeight || img.height;
+    if (!canvas.width || !canvas.height) return;
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    var data = ctx.getImageData(0,0,canvas.width,canvas.height), px = data.data;
+    for (var i=0; i<px.length; i+=4) { var r=px[i], g=px[i+1], b=px[i+2]; if (g > r*1.22 && g > b*1.2 && g > 100) { var alpha = Math.max(0, Math.min(255, (Math.max(r,b)-g+95)*3)); px[i+3] = Math.min(px[i+3], alpha); } }
+    ctx.putImageData(data,0,0); img.src = canvas.toDataURL('image/png');
+  }
+  if (img.complete) process(); else img.addEventListener('load', process, {once:true});
+}
+
+function preparePixelImages() { document.querySelectorAll('img.chroma-image').forEach(removeGreenBackground); }
+
+function render() {
+  var app = document.getElementById('app');
+  if (currentView === 'landing') { app.innerHTML = renderLanding(); requestAnimationFrame(setupMotion); return; }
+  var rootClass = currentView === 'overview' ? 'pixel-app-shell pixel-shell-overview' : 'pixel-app-shell';
+  var body = currentView === 'overview' ? renderOverview() : (currentView === 'collections' ? renderCollections() : currentView === 'timeline' ? renderTimeline() : renderMapView());
+  app.innerHTML = '<div class="'+rootClass+'">'+renderNav()+'<div class="pixel-main">'+body+'</div></div>';
+  document.getElementById('modal-overlay').classList.add('pixel-modal');
+  requestAnimationFrame(function(){ setupMotion(); preparePixelImages(); if (currentView === 'map') setTimeout(renderMap, 80); });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadData();
+  // 迁移旧数据：photoTip → photos
+  appData.collections.forEach(function(c) {
+    if (!c.photos) c.photos = [];
+  });
+  if (getTripRecords().length) saveData();
+  // 检查是否从分享链接打开
+  var imported = loadFromShareLink();
+  if (imported) {
+    markLandingSeen();
+    showSyncToast('已导入分享的行程');
+  } else if (getTripRecords().length) {
+    currentView = 'overview';
+  }
+  render();
+});
+
+document.addEventListener('click', function(e) {
+  if (e.target.id === 'modal-overlay') closeModal();
+  if (e.target.id === 'photo-viewer') closePhotoViewer();
+});
+  </script>
+</body>
+</html>
