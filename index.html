@@ -3,35 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>旅记 TripFlow - 出行计划工具</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    * { font-family: 'Noto Sans SC', system-ui, -apple-system, sans-serif; }
-    body { background-color: #f9fafb; }
-    /* 隐藏滚动条但保留功能 */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    /* 行内容溢出省略 */
-    .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-    /* 动画 */
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-fade-in { animation: fadeIn 0.2s ease-out; }
-    /* modal */
-    #modal-content { animation: fadeIn 0.15s ease-out; }
-  </style>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>TripFlow</title>
+  <script>
+    var target = 'tripflow.html?v=' + Date.now();
+    window.location.replace(target);
+  </script>
 </head>
-<body class="text-gray-900">
-  <div id="app"></div>
-
-  <!-- 模态框遮罩 -->
-  <div id="modal-overlay" class="hidden fixed inset-0 bg-black/40 z-[100] items-center justify-center p-4">
-    <div id="modal-content" class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-6"></div>
-  </div>
-
-  <script src="app.js"></script>
+<body>
+  <p>正在打开 TripFlow… 如果没有自动跳转，请点击 <a id="tripflow-link" href="tripflow.html">tripflow.html</a>。</p>
+  <script>
+    document.getElementById('tripflow-link').href = target;
+  </script>
 </body>
 </html>
